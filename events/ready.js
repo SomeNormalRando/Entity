@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { sequelize } = require('../dbindex.js')
+const { Tags, Prefixes, Counting } = require('../dbindex.js')
 module.exports = {
     name: 'ready',
     once: true,
@@ -7,9 +7,10 @@ module.exports = {
         console.log(`Bot activated, logged in as ${client.user.tag}.`);
         client.user.setActivity('%help', { type: 'WATCHING' });
     
-        sequelize.sync({force:true});
+        Tags.sync({force:true});
+        Prefixes.sync();
+        Counting.sync()
         setInterval(() => randomCats(client), 1800000);
-
     }
 }
 async function randomCats(client) {

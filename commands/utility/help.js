@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { prefix } = require('../../config.json');
+const { getPrefix } = require('../../dbindex.js');
 module.exports = {
 	name: 'help',
 	aliases: ['commands', 'command', 'cmd', 'cmds', 'info'],
@@ -8,8 +8,9 @@ module.exports = {
 	args: false,
 	cooldown: 3,
 	guildOnly: false,
-	execute(message, args) {
+	async execute(message, args) {
         let { commands } = message.client;
+		const prefix = await getPrefix(message.guild.id);
 
 		commands = commands.filter(cmd => !cmd.hidden || (cmd.hidden && cmd.hidden != true));
 		

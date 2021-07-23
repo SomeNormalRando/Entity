@@ -46,7 +46,7 @@ module.exports = {
 		if (guildMember.premiumSince) {
 			acknowledgements.push(`Boosting server since <t:${Math.floor(guildMember.premiumSinceTimestamp/1000)}:R>`)
 		}
-		userEmbed.addField('Acknowledgements', acknowledgements.join(', '))
+		if (acknowledgements.length) userEmbed.addField('Acknowledgements', acknowledgements.join(', '))
 		message.channel.send(userEmbed);
 	},
 };

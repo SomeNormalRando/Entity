@@ -1,13 +1,13 @@
 module.exports = {
 	name: 'ping',
-	aliases: ['latency'],
+	aliases: [],
 	description: 'Used to test if the bot is online.',
 	usage: '',
 	args: false,
 	cooldown: 3,
 	guildOnly: false,
 	execute(message, args) {
-		message.channel.send(`Bot is online.`) 
-			.then(msg => msg.edit(msg.content += `\nLatency is **${msg.createdTimestamp - message.createdTimestamp} milliseconds**.`));
+		message.channel.send(`Pong! Bot is online.\nPinging...`) 
+			.then(msg => msg.edit(`Pong! Bot is online!\nLatency is **${msg.createdTimestamp - message.createdTimestamp} milliseconds**.\nAPI latency is **${Math.round(message.client.ws.ping)} milliseconds**.`));
 	},
 };
