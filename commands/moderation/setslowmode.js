@@ -3,10 +3,11 @@ module.exports = {
 	aliases: ['slowmode'],
 	description: 'Used to set slowmode for a channel',
 	usage: '<set|=|add|+|remove> <seconds>',
-	permissions: 'MANAGE_CHANNELS',
 	args: true,
 	cooldown: 10,
 	guildOnly: true,
+	permissions: 'MANAGE_CHANNELS',
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS'],
 	execute(message, args) {
 		let duration = parseInt(args[1], 10)
 		if (args[0] == 'remove' || args < 1) {

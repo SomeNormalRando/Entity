@@ -7,6 +7,7 @@ module.exports = {
 	args: false,
 	cooldown: 5,
 	guildOnly: false,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	execute(message, args) {
 		const embed = new Discord.MessageEmbed()
 			.setTitle('Invite links:')

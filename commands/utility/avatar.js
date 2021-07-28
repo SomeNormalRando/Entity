@@ -7,6 +7,7 @@ module.exports = {
 	args: false,
 	cooldown: 5,
 	guildOnly: false,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message, args) {
 		let user
 		if (args.length) {

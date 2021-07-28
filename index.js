@@ -9,11 +9,7 @@ dotenv.config()
 const client = new Discord.Client( { disableMentions: 'everyone'} );
 
 //Global variables
-const { userWhitelist, guildWhitelist} = require('./config.json');
-const {	getPrefix } = require('./dbindex.js')
-const countingNumberFile = require('./countingNumber.json');
 client.cooldowns = new Discord.Collection();
-let countingNumber = parseInt(JSON.parse(countingNumberFile.number), 10);
 
 
 //Command handling

@@ -7,6 +7,7 @@ module.exports = {
 	args: true,
 	cooldown: 5,
 	guildOnly: false,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS'],
 	async execute(message, args) {
 		if (message.channel.type === 'dm') {
 			await message.channel.send('dude why would you even want to make a a poll in a dm');
@@ -19,8 +20,8 @@ module.exports = {
 			.setFooter(`Poll by ${message.author.tag}`)
 		await message.channel.send(pollEmbed)
 		.then(pollMessage => {
-		  pollMessage.react('👍')
-		  pollMessage.react('👎')
+			pollMessage.react('👍')
+			pollMessage.react('👎')
 		})
 
 	},

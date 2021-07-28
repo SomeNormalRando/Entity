@@ -6,6 +6,7 @@ module.exports = {
 	args: true,
 	cooldown: 5,
 	guildOnly: false,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message, args) {
 		if (args.length < 2) {
 			return message.reply('Please supply at least two arguments.')

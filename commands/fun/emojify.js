@@ -6,6 +6,7 @@ module.exports = {
 	args: true,
 	cooldown: 3,
 	guildOnly: true,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
 	execute(message, args) {
 		const emojis = {
 			a: '🇦', b: '🇧', c: '🇨', d: '🇩',

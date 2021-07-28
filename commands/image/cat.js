@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch')
 module.exports = {
 	name: 'cat',
-	description: 'Get images of random cats of random sizes! Images from https://aws.random.cat.',
+	description: 'Get images of random cats! Images from https://aws.random.cat.',
     aliases: ['cats', 'kitty', 'meow', 'purr'],
     usage: '',
     cooldown: 3,

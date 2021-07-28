@@ -8,6 +8,7 @@ module.exports = {
 	args: false,
 	cooldown: 3,
 	guildOnly: false,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message, args) {
         let { commands } = message.client;
 		const prefix = await getPrefix(message.guild.id);

@@ -27,7 +27,6 @@ module.exports = {
 		sequelize.define('tags', {
 			name: {
 				type: Sequelize.STRING,
-				//unique: true,
 			},
 			content: Sequelize.TEXT,
 			createdBy: Sequelize.STRING,

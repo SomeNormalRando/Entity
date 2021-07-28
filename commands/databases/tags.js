@@ -1,6 +1,5 @@
-const { Tags } = require('../../dbindex.js')
+const { Tags, getPrefix } = require('../../dbindex.js')
 const Discord = require('discord.js')
-const { prefix } = require('../../config.json')
 module.exports = {
 	name: 'tags',
 	aliases: ['tag'],
@@ -9,7 +8,9 @@ module.exports = {
 	args: false,
 	cooldown: 3,
 	guildOnly: true,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message, args) {
+		const prefix = await getPrefix(message.guild.id);
 		const subcommand = args.shift()?.toLowerCase();
 		if (!subcommand) {
 			const tagList = await Tags.findAll({ attributes: ['name'], where: { guild: message.guild.id } });
@@ -29,6 +30,8 @@ module.exports = {
 			//add
 			if (subcommand == 'add') {
 				if (!tagName || !tagContent) return message.reply(`Please provide a tag name and tag content.`)
+				const tag = await Tags.findOne({ where: { name: tagName, guild: message.guild.id }});
+				if (tag) return message.reply(`Tag \`${tagName}\` already exists.`)
 				try {
 					const tag = await Tags.create({
 						name: tagName,
@@ -40,9 +43,7 @@ module.exports = {
 					return message.reply(`Tag \`${tag.name}\` added.`);
 				}
 				catch (e) {
-					if (e.name === 'SequelizeUniqueConstraintError') {
-						return message.reply(`Tag \`${tagName}\` already exists.`);
-					}
+					console.log(e)
 					return message.reply('An error occured.');
 				}
 

@@ -7,6 +7,7 @@ module.exports = {
 	args: false,
 	cooldown: 5,
 	guildOnly: true,
+	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message) {
 		const guild = message.guild;
 		const members = await guild.members.fetch();
