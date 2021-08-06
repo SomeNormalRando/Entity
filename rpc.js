@@ -12,7 +12,7 @@ client.on('ready', async () => {
 		details: `Decade 2: ${dayName}, ${day} ${month} ${year}`,
 		buttons: [
 			{ label: "Join", url: "https://discord.gg/WDuHdwwef5"}, 
-			{ label: "Spectate", url: "https://bit.ly/3dXfKRp" }],
+			{ label: "Spectate", url: "https://bit.ly/3zWhrHj" }],
 		largeImageKey: "earth",
 		largeImageText: "Life",
 		//smallImageKey: 'blueorb',

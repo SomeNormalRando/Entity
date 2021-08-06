@@ -29,6 +29,6 @@ module.exports = {
 				content[index] = '  ';
 			}
 		});
-		message.channel.send(content.join(' '));
+		message.reply(content.join(' '));
 	},
 };

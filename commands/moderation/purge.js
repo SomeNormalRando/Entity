@@ -6,7 +6,7 @@ module.exports = {
 	args: true,
 	cooldown: 10,
 	guildOnly: true,
-	permissions: 'MANAGE_MESSAGES',
+	userPermissions: ['MANAGE_MESSAGES'],
 	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES'],
 	execute(message, args) {
 		message.channel.bulkDelete(parseInt(args[0], 10) + 1, true)

@@ -8,6 +8,6 @@ module.exports = {
 	guildOnly: false,
 	execute(message, args) {
 		let searchQuery = args.join('%20');
-		message.channel.send(`**Google** search results for ${args.join(' ')}: \nhttps://google.com/search?q=${searchQuery}`);
+		message.reply(`**Google search results for ${args.join(' ')}**: \nhttps://google.com/search?q=${searchQuery}`);
 	},
 };

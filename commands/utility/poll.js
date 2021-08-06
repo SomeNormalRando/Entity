@@ -18,10 +18,10 @@ module.exports = {
 			.setTitle(`${args.join(' ')}`)
 			.setTimestamp()
 			.setFooter(`Poll by ${message.author.tag}`)
-		await message.channel.send(pollEmbed)
-		.then(pollMessage => {
-			pollMessage.react('👍')
-			pollMessage.react('👎')
+		await message.channel.send({ embeds: [pollEmbed] })
+		.then(msg => {
+			msg.react('👍')
+			msg.react('👎')
 		})
 
 	},

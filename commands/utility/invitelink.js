@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const { inviteLink } = require('../../config.json');
 module.exports = {
 	name: 'invitelink',
 	aliases: ['invite'],
@@ -12,9 +13,9 @@ module.exports = {
 		const embed = new Discord.MessageEmbed()
 			.setTitle('Invite links:')
 			.setColor('#003fff')
-			.setDescription('[Bot invite link](https://discord.com/oauth2/authorize?client_id=812960290718482483&scope=bot&permissions=808971384)\n[Owner\'s server](https://discord.gg/WDuHdwwef5) (Not a support server)')
+			.setDescription(`[Bot invite link](${inviteLink})\n[Owner\'s server](https://discord.gg/WDuHdwwef5) (Not a support server)`)
 			.setTimestamp()
 			.setFooter(message.client.user.tag, message.client.user.displayAvatarURL({format: "png", dynamic: true}))
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	},
 };

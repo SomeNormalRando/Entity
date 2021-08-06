@@ -6,7 +6,7 @@ module.exports = {
 	args: true,
 	cooldown: 10,
 	guildOnly: true,
-	permissions: 'MANAGE_CHANNELS',
+	userPermissions: ['MANAGE_CHANNELS'],
 	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS'],
 	execute(message, args) {
 		let duration = parseInt(args[1], 10)

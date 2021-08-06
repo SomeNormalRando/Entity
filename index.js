@@ -3,14 +3,16 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const dotenv = require('dotenv');
 
-dotenv.config()
+dotenv.config();
 
 //Create a new Discord client
-const client = new Discord.Client( { disableMentions: 'everyone'} );
+const client = new Discord.Client({
+	intents: ['GUILDS', 'GUILD_MESSAGES'],
+	//presence: { activities: '%help' },
+	allowedMentions: { repliedUser: false } });
 
 //Global variables
 client.cooldowns = new Discord.Collection();
-
 
 //Command handling
 client.commands = new Discord.Collection();
@@ -21,6 +23,17 @@ for (const folder of commandFolders) {
 		const command = require(`./commands/${folder}/${file}`);
 		command.category = folder;
 		client.commands.set(command.name, command);
+	}
+}
+
+//Slash command handling
+client.slashCommands = new Discord.Collection();
+const slashCommandFolders = fs.readdirSync('./slashcommands');
+for (const folder of slashCommandFolders) {
+	const commandFiles = fs.readdirSync(`./slashcommands/${folder}`).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const command = require(`./slashcommands/${folder}/${file}`);
+		client.slashCommands.set(command.name, command);
 	}
 }
 
@@ -35,16 +48,10 @@ for (const file of eventFiles) {
 	}
 }
 
+//Unhandled promise rejection handling
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});
+
 //Login
 client.login(process.env.TOKEN);
-
-//Functions
-const getUserfromMention = function(mention) {
-	const matches = mention.match(/^<@!?(\d+)>$/);
-
-	if (!matches) return;
-
-	const id = matches[1];
-
-	return client.users.cache.get(id);
-}

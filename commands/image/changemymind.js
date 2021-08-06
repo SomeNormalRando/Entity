@@ -33,7 +33,7 @@ module.exports = {
 
         const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'changemymind.png')
         await msg.delete();
-        await message.channel.send(attachment)
+        await message.reply({ files: [attachment] })
 
 	},
 };

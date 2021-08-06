@@ -5,6 +5,9 @@
 		}
 	],
 	"settings": {
-		"terminal.integrated.cwd": "C:\\Users\\loozj\\OneDrive\\Discord_Bot"
+		"terminal.integrated.cwd": "C:\\Users\\loozj\\OneDrive\\Discord_Bot",
+		"discord.lowerDetailsEditing": "Programming a Discord Bot",
+		"discord.lowerDetailsNoWorkspaceFound": "{empty}",
+		"discord.enabled": true
 	}
 }

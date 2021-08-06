@@ -16,11 +16,11 @@ module.exports = {
 			user = message.author
 		}
 
-		let avatarEmbed = new Discord.MessageEmbed()
+		const avatarEmbed = new Discord.MessageEmbed()
 			.setColor('#2f3136')
 			.setAuthor(user.tag, user.displayAvatarURL({format: "png", dynamic: true}))
 			.setTitle(`Avatar`)
 			.setImage(user.displayAvatarURL({format: "png", dynamic: true}) + '?size=1024')
-		message.channel.send(avatarEmbed);
+		message.channel.send({ embeds: [avatarEmbed] });
 	},
 };

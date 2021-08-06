@@ -8,6 +8,6 @@ module.exports = {
 	cooldown: 5,
 	guildOnly: false,
 	execute(message, args) {
-		message.channel.send('**Dare: **\n' + dares[Math.floor(Math.random() * dares.length)]);
+		message.reply('**Dare: **\n' + dares[Math.floor(Math.random() * dares.length)]);
 	},
 };

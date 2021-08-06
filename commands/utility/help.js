@@ -14,8 +14,9 @@ module.exports = {
 		const prefix = await getPrefix(message.guild.id);
 
 		commands = commands.filter(cmd => !cmd.hidden || (cmd.hidden && cmd.hidden != true));
-		
-        if (!args.length) { //List all commands if no arguments were provided
+
+		//List all commands if no arguments were provided
+        if (!args.length) {
 			const categories = new Discord.Collection();
 			commands.forEach(command => {
 				const category = categories.get(command.category)
@@ -38,9 +39,10 @@ module.exports = {
 				helpEmbed.addField(category.join(''), categoryCommands.map(cmd => `\`${cmd.name}\``).join(' '))
 			})
 			helpEmbed.addField('Command Syntax Guide', 'Values in angle brackets (\`< >\`) are required. Values in square brackets (`[ ]`) are optional. The `|` sign means \'or\'.')
-			message.channel.send(helpEmbed);
+			message.reply({ embeds: [helpEmbed] });
 
-        } else { //Else try to get the command
+		//Else try to get the command
+        } else {
         	const name = args[0].toLowerCase();
         	const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
 
@@ -80,16 +82,21 @@ module.exports = {
 			//Cooldown
 			if (command.cooldown) helpEmbed.addField('Cooldown:', `${command.cooldown} seconds`);
 
-			//Permissions
-			if (command.permissions) { 
-				const userPerms = command.permissions
-				for (let i = userPerms.length; i--;){
-					userPerms[i] = '\`' + userPerms[i] + '\`';
-				}
-				helpEmbed.addField('Required User Permissions:', userPerms);
+			//User permissions
+			if (command.userPermissions) { 
+				const userPerms = [];
+				command.userPermissions.forEach(element => {
+					userPerms.push('`' + element + '`');
+				});
+				helpEmbed.addField('Required User Permissions:', userPerms.join(', '));
 			}
 
-	        message.channel.send(helpEmbed);
+			//Bot permissions
+			if (command.botPermissions) {
+
+			}
+
+	        message.reply({ embeds: [helpEmbed] });
 		}
 	},
 };

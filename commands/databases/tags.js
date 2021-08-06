@@ -21,7 +21,7 @@ module.exports = {
 				.setDescription(tagString)
 				.setFooter(`${prefix}tag <tag name> to use a tag`)
 				.setTimestamp()
-			return message.channel.send(embed);
+			return message.reply({ embeds: [embed] });
 
 		} else {
 			const tagName = args.shift()?.toLowerCase();
@@ -81,7 +81,7 @@ module.exports = {
 					)
 					.setFooter(`${prefix}tag <tag name> to use a tag`)
 					.setTimestamp()
-				return message.channel.send(embed);
+				return message.reply({ embeds: [embed] });
 
 			//find tag
 			} else {

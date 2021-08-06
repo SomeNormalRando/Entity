@@ -15,7 +15,7 @@ module.exports = {
 			.setColor('#2F3136')
 			.setTimestamp()
 			.setFooter(`Requested by ${message.author.tag}`, `${message.author.displayAvatarURL({dynamic: true})}`)
-		let msg = await message.channel.send('Fetching results...');
+		let loadingMsg = await message.channel.send('Fetching results...');
 		const query = querystring.stringify({ term: args.join(" ")});
 
 		const { list } = await fetch(`https://api.urbandictionary.com/v0/define?${query}`)
@@ -38,6 +38,6 @@ module.exports = {
 				{ name: 'Rating', value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.` },
 				{ name: 'Written On', value: trim(answer.written_on.substring(0, 10), 1024)},
 			)
-		message.channel.send(embed).then(msg.delete());
+		message.channel.send({ embeds: [embed] }).then(loadingMsg.delete());
 	},
 };

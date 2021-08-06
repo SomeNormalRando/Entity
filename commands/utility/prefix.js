@@ -8,7 +8,7 @@ module.exports = {
 	args: false,
 	cooldown: 5,
 	guildOnly: true,
-	permissions: 'MANAGE_SERVER',
+	userPermissions: ['MANAGE_SERVER'],
 	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message) {
 		const currentPrefix = await getPrefix(message.guild.id);
@@ -23,7 +23,7 @@ module.exports = {
 				.setDescription('`' + currentPrefix + '`')
 				.setFooter(`${currentPrefix}prefix <new prefix> to set a new prefix`)
 				.setTimestamp()
-			message.channel.send(embed)
+			message.channel.send({ embeds: [embed] })
 		} else {
 			await Prefixes.findOrCreate({
 				where: { guild: message.guild.id, prefix: currentPrefix }, 

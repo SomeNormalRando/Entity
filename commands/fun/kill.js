@@ -2,7 +2,7 @@ module.exports = {
 	name: 'kill',
     aliases: ['murder'],
 	description: 'Kill someone',
-    usage: '{user}',
+    usage: '<user>',
     args: false,
     cooldown: 2.5,
     guildOnly: false,
@@ -24,7 +24,7 @@ module.exports = {
             `${args[0]} died from fanning too much over Kpop.`,
             `${args[0]} fell to the ground and died.`,
         ];
-            message.channel.send(killed[Math.floor(Math.random() * killed.length)]);
+            message.reply(killed[Math.floor(Math.random() * killed.length)]);
         }
 	},
 };

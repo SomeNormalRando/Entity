@@ -8,6 +8,6 @@ module.exports = {
 	guildOnly: false,
 	async execute(message, args,) {
 		let flip = ['heads', 'tails'];
-    	message.channel.send(`You flipped a coin and got **${flip[Math.floor(Math.random() * flip.length)]}**!`)
+    	message.reply(`You flipped a coin and got **${flip[Math.floor(Math.random() * flip.length)]}**!`)
 	},
 };
