@@ -40,7 +40,7 @@ module.exports = {
 				i.deferUpdate();
 				//If the user who clicked the button isn't the one who started the game
 				if (i.user.id != interaction.user.id) {
-					return i.reply({ content: "These buttons aren't for you", ephemeral: true });
+					return i.reply({ content: "These buttons aren't for you.", ephemeral: true });
 				}
 				const clickedNum = parseInt(i.customId);
 				if (clickedNum == number) {

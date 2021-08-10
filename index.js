@@ -1,57 +1,23 @@
-//Require modules
+//Require Discord.js
 const Discord = require('discord.js');
-const fs = require('fs');
-const dotenv = require('dotenv');
 
-dotenv.config();
+//Load token from the file .env into process
+require('dotenv').config();
 
 //Create a new Discord client
 const client = new Discord.Client({
+	//Intents
 	intents: ['GUILDS', 'GUILD_MESSAGES'],
-	//presence: { activities: '%help' },
-	allowedMentions: { repliedUser: false } });
-
-//Global variables
-client.cooldowns = new Discord.Collection();
-
-//Command handling
-client.commands = new Discord.Collection();
-const commandFolders = fs.readdirSync('./commands');
-for (const folder of commandFolders) {
-	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const command = require(`./commands/${folder}/${file}`);
-		command.category = folder;
-		client.commands.set(command.name, command);
-	}
-}
-
-//Slash command handling
-client.slashCommands = new Discord.Collection();
-const slashCommandFolders = fs.readdirSync('./slashcommands');
-for (const folder of slashCommandFolders) {
-	const commandFiles = fs.readdirSync(`./slashcommands/${folder}`).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const command = require(`./slashcommands/${folder}/${file}`);
-		client.slashCommands.set(command.name, command);
-	}
-}
-
-//Event handling
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-for (const file of eventFiles) {
-	const event = require(`./events/${file}`);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args, client));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args, client));
-	}
-}
-
-//Unhandled promise rejection handling
-process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
+	//Status
+	presence: { activities: [{ name:`${require('./config.json').defaultPrefix}help`, type: 'WATCHING' }] },
+	//Allowed mentions
+	allowedMentions: { repliedUser: false }
 });
 
-//Login
-client.login(process.env.TOKEN);
+//Exports
+module.exports = {
+	client,
+	token: process.env.TOKEN,
+	config: require('./config.json'),
+	Util: require('./assets/Util.js'),
+};

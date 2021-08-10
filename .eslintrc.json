@@ -5,11 +5,11 @@
 		"es6": true
 	},
 	"parserOptions": {
-		"ecmaVersion": 2019
+		"ecmaVersion": "latest"
 	},
 	"rules": {
 		"brace-style": "off",
-		"comma-dangle": ["error", "always-multiline"],
+		"comma-dangle": ["error", "only-multiline"],
 		"comma-spacing": "error",
 		"comma-style": "error",
 		"curly": ["error", "multi-line", "consistent"],

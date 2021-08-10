@@ -1,4 +1,4 @@
-const Discord = require('discord.js')
+const Discord = require('discord.js');
 module.exports = {
 	name: 'poll',
 	aliases: ['yesno'],
@@ -17,12 +17,12 @@ module.exports = {
 			.setColor('#2F3136')
 			.setTitle(`${args.join(' ')}`)
 			.setTimestamp()
-			.setFooter(`Poll by ${message.author.tag}`)
+			.setFooter(`Poll by ${message.author.tag}`);
 		await message.channel.send({ embeds: [pollEmbed] })
-		.then(msg => {
-			msg.react('👍')
-			msg.react('👎')
-		})
+			.then(msg => {
+				msg.react('👍');
+				msg.react('👎');
+			});
 
 	},
 };

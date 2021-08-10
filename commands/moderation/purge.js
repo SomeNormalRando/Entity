@@ -13,6 +13,8 @@ module.exports = {
 			.then(amount => message.channel.send(`Deleted ${amount.size} messages.`)
 				.then(msg => msg.delete())
 			)
-			.catch(error => {console.error(error); message.channel.send(`Error deleting messages.`)})
+			.catch(error => {
+				console.error(error); message.channel.send(`Error deleting messages.`);
+			});
 	},
 };

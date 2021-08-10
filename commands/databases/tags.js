@@ -1,5 +1,6 @@
-const { Tags, getPrefix } = require('../../dbindex.js')
-const Discord = require('discord.js')
+const { Tags } = require('../../database/dbIndex.js');
+const Discord = require('discord.js');
+const { getPrefix } = require('../../index.js').Util;
 module.exports = {
 	name: 'tags',
 	aliases: ['tag'],
@@ -20,7 +21,7 @@ module.exports = {
 				.setColor('#2f3136')
 				.setDescription(tagString)
 				.setFooter(`${prefix}tag <tag name> to use a tag`)
-				.setTimestamp()
+				.setTimestamp();
 			return message.reply({ embeds: [embed] });
 
 		} else {
@@ -29,9 +30,9 @@ module.exports = {
 
 			//add
 			if (subcommand == 'add') {
-				if (!tagName || !tagContent) return message.reply(`Please provide a tag name and tag content.`)
-				const tag = await Tags.findOne({ where: { name: tagName, guild: message.guild.id }});
-				if (tag) return message.reply(`Tag \`${tagName}\` already exists.`)
+				if (!tagName || !tagContent) return message.reply(`Please provide a tag name and tag content.`);
+				const existingTag = await Tags.findOne({ where: { name: tagName, guild: message.guild.id } });
+				if (existingTag) return message.reply(`Tag \`${tagName}\` already exists.`);
 				try {
 					const tag = await Tags.create({
 						name: tagName,
@@ -43,13 +44,13 @@ module.exports = {
 					return message.reply(`Tag \`${tag.name}\` added.`);
 				}
 				catch (e) {
-					console.log(e)
+					console.log(e);
 					return message.reply('An error occured.');
 				}
 
 			//edit
 			} else if (subcommand == 'edit') {
-				if (!tagName || !tagContent) return message.reply(`Please provide a tag name and tag content.`)
+				if (!tagName || !tagContent) return message.reply(`Please provide a tag name and tag content.`);
 
 				const affectedRows = await Tags.update({ content: tagContent }, { where: { name: tagName, guild: message.guild.id } });
 				if (affectedRows > 0) {
@@ -59,7 +60,7 @@ module.exports = {
 
 			//delete
 			} else if (subcommand == ('delete' || 'remove' || 'byebye')) {
-				if (!tagName) return message.reply(`Please provide a tag to delete.`)
+				if (!tagName) return message.reply(`Please provide a tag to delete.`);
 
 				const rowCount = await Tags.destroy({ where: { name: tagName, guild: message.guild.id } });
 				if (!rowCount) return message.reply(`Couldn't find tag \`${tagName}\`.`);
@@ -67,25 +68,25 @@ module.exports = {
 
 			//info
 			} else if (subcommand == 'info') {
-				if (!tagName) return message.reply(`Please provide a tag name.`)
-				const tag = Tags.findOne({ where: { name: tagName, guild: message.guild.id }});
+				if (!tagName) return message.reply(`Please provide a tag name.`);
+				const tag = Tags.findOne({ where: { name: tagName, guild: message.guild.id } });
 				const embed = new Discord.MessageEmbed()
 					.setTitle(`Info for tag ${tag.name}`)
 					.setColor('#2f3136')
 					.addFields(
-						{ name: 'Content', value: tag.content},
+						{ name: 'Content', value: tag.content },
 						{ name: 'Created By', value: tag.createdBy, inline: true },
-						{ name: 'Created At', value: tag.createdAt, inline: true},
+						{ name: 'Created At', value: tag.createdAt, inline: true },
 						{ name: 'Last Updated By', value: `<t:${tag.updatedBy}:R>`, inline: true },
 						{ name: 'Last Updated At', value: `<t:${tag.updatedAt}:R>`, inline: true }
 					)
 					.setFooter(`${prefix}tag <tag name> to use a tag`)
-					.setTimestamp()
+					.setTimestamp();
 				return message.reply({ embeds: [embed] });
 
 			//find tag
 			} else {
-				const tag = await Tags.findOne({ where: { name: subcommand, guild: message.guild.id} });
+				const tag = await Tags.findOne({ where: { name: subcommand, guild: message.guild.id } });
 				if (tag) {
 					return message.channel.send(tag.get('content'));
 				}

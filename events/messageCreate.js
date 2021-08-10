@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const { userWhitelist, guildWhitelist } = require('../config.json');
-const {	getPrefix, Counting } = require('../dbindex.js');
+const {	Counting } = require('../database/dbIndex.js');
+const { getPrefix } = require('../index.js').Util;
 module.exports = {
 	name: 'messageCreate',
 	once: false,

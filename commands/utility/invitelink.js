@@ -13,9 +13,9 @@ module.exports = {
 		const embed = new Discord.MessageEmbed()
 			.setTitle('Invite links:')
 			.setColor('#003fff')
-			.setDescription(`[Bot invite link](${inviteLink})\n[Owner\'s server](https://discord.gg/WDuHdwwef5) (Not a support server)`)
+			.setDescription(`[Bot invite link](${inviteLink})`)
 			.setTimestamp()
-			.setFooter(message.client.user.tag, message.client.user.displayAvatarURL({format: "png", dynamic: true}))
+			.setFooter(message.client.user.tag, message.client.user.displayAvatarURL({ format: "png", dynamic: true }));
 		message.channel.send({ embeds: [embed] });
 	},
 };

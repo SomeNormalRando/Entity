@@ -9,7 +9,7 @@ module.exports = {
 	guildOnly: false,
 	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
 	async execute(message, args) {
-		let user
+		let user;
 		if (args.length) {
 			user = message.mentions.users.first() || await message.client.users.fetch(args[0]) || message.author;
 		} else {

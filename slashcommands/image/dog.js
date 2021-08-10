@@ -18,7 +18,7 @@ module.exports = {
 		},
 		{
 			name: 'list',
-			description: 'List all gettable dog breeds',
+			description: 'List all gettable dog breeds for the /dog random command',
 			type: 'SUB_COMMAND',
 		},
 	],
