@@ -4,23 +4,24 @@
   "description": "A Discord bot",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node .",
+    "start": "cd src && node bot.js",
     "lint": "eslint .",
     "dbinit": "cd database & node dbInit.js"
   },
   "keywords": [],
-  "author": "Existence#8888",
+  "author": "SomeNormalRando (https://github.com/SomeNormalRando)",
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "0.1.0-canary.0",
     "canvas": "^2.8.0",
     "discord-rpc": "^4.0.1",
-    "discord.js": "^13.0.1",
+    "discord.js": "^13.1.0",
     "dotenv": "^8.2.0",
-    "eslint": "^7.32.0",
     "node-fetch": "^2.6.1",
     "sequelize": "^6.6.5",
     "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
   }
 }
