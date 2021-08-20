@@ -1,41 +1,58 @@
 "use strict";
 const Discord = require("discord.js");
 const {	Counting } = require("../database/dbIndex.js");
+const { config } = require("../index.js");
 module.exports = {
 	name: "messageCreate",
 	once: false,
 	async execute(message) {
 		if (message.author.bot || message.webhookID) return;
-		const prefix = "entity ";
-		const args = message.content.slice(prefix.length).trim().split(/ +/);
-		const commandName = args.shift().toLowerCase();
-
 		// Counting
-		const counting = await Counting.findOne({ where: { channel: message.channel.id } });
-		if (counting) {
-			// Get current number
-			const number = counting.number;
-			// Get number from message
-			const inputNumber = parseInt(message.content, 10);
-			// If number is correct
-			if (inputNumber === number + 1) {
-				counting.increment("number", { by: 1 });
-				message.react("✅");
-			} else if (!isNaN(inputNumber)) {
-				message.react("❌");
+		if (message.channel.id === "851989863787790357") {
+			const counting = await Counting.findOne({ where: { channel: message.channel.id } });
+			if (counting) {
+				// Get current number
+				const number = counting.number;
+				// Get number from message
+				const inputNumber = parseInt(message.content, 10);
+				// If number is correct
+				if (inputNumber === number + 1) {
+					counting.increment("number", { by: 1 });
+					message.react("✅");
+				} else if (!isNaN(inputNumber)) {
+					message.react("❌");
+				}
 			}
 		}
-		if (!message.content.startsWith(prefix)) return;
 
+		// Message commands
+		const mention = `<@!${message.client.user.id}>`;
+		let prefix;
+		if (message.content.match(/^%/)) prefix = "%";
+		else if (message.content.toLowerCase().match(/^entity\s/)) prefix = "entity ";
+		else if (!message.content.startsWith(mention)) return;
+
+		const args = message.content.slice(prefix?.length).trim().split(/ +/);
+		const commandName = args.shift().toLowerCase();
+
+		if (commandName === mention) {
+			message.channel.send("Message commands have been removed, use slash commands instead.\nhttps://imgur.com/KS2M6dC");
+		}
+
+		// Owners-only commands
+		if (!config.owners.includes(message.author.id)) return;
 		// Eval
 		if (commandName === "eval") {
-			if (message.author.id != "728910425780912199") return;
 			const client = { ...message.client };
 			client.token = "[REDACTED]";
-			let evalArgs = message.content.split(" ");
-			evalArgs.shift();
-			evalArgs.shift();
-			evalArgs = evalArgs.join(" ");
+			let evalArgs = message.content.substring(prefix.length + commandName.length + 1);
+			let sendWithoutEmbed = false;
+			if (evalArgs.split(" ")[0] === "-s") {
+				sendWithoutEmbed = true;
+				evalArgs = evalArgs.split(" ");
+				evalArgs.shift();
+				evalArgs = evalArgs.join(" ");
+			}
 			let result;
 			let lang = "javascript";
 
@@ -45,7 +62,7 @@ module.exports = {
 			catch(error) {
 				return message.reply(Discord.Formatters.codeBlock(error.toString())).catch(err => console.errror(err));
 			}
-
+			if (sendWithoutEmbed === true) return;
 			let resultStr;
 			if (typeof result == "object") {
 				lang = "json";

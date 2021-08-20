@@ -17,12 +17,24 @@ String.prototype.toTitleCase = () => {
 };
 module.exports = {
 	/**
-	 * Gets the current prefix of the server specified
-	 * @param {string} guildID The id of the guild to get the current prefix from
+	 * Removes markdown from a string
+	 * @param {string} str String to remove markdown from
+	 * @returns {string} The string with markdown removed
 	 */
-	getPrefix: async function(guildID) {
-		const prefix = await Prefixes.findOne({ where: { guild: guildID } });
-		return prefix?.prefix ?? defaultPrefix;
+	removeMarkdown(str) {
+		const regexes = [
+			/\*\*(.*)\*\*/,
+			/\*(.*)\*/,
+			/_(.*)_/,
+			/__(.*)__/,
+			/\|\|(.*)\|\|/,
+			/`(.*)`/,
+			/```(.*)```/,
+		];
+		for (const regex of regexes) {
+			str = str.replace(regex, "$1");
+		}
+		return str;
 	},
 	/**
 	 * Converts snake case to title case

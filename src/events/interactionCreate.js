@@ -17,26 +17,27 @@ module.exports = {
 			if (command.userPerms) {
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
 				const missingPerms = [];
-				command.userPerms.forEach((element) => {
+				for (const element of command.userPerms) {
 					if (!userPerms.has(command.userPerms)) missingPerms.push(Discord.Formatters.inlineCode(Util.normalizeStr(element)));
-				});
+				}
 				if (missingPerms.length) return interaction.reply({ content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`, ephemeral: true });
 			}
 
 			const args = {};
 			if (command.data.options) {
-				command.data.options.forEach((element) => {
+				for (const element of command.data.options) {
 					const type = element.type;
 					let optionVal = interaction.options.get(element.name);
-					if (!optionVal) return;
-					if (type == "USER") {
+					if (!optionVal) continue;
+					// Type 6 is type USER
+					if (type === 6) {
 						optionVal = interaction.options.getMember(element.name);
 					}
 					else {
 						optionVal = optionVal.value;
 					}
 					args[element.name] = optionVal;
-				});
+				}
 				const subcommand = interaction.options.getSubcommand(false);
 				if (subcommand) args.subcommand = subcommand;
 			}
@@ -60,9 +61,9 @@ module.exports = {
 			if (command.userPerms) {
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
 				const missingPerms = [];
-				command.userPerms.forEach((element) => {
+				for (const element of command.userPerms) {
 					if (!userPerms.has(command.userPerms)) missingPerms.push(Discord.Formatters.inlineCode(Util.normalizeStr(element)));
-				});
+				}
 				if (missingPerms.length) return interaction.reply({ content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`, ephemeral: true });
 			}
 

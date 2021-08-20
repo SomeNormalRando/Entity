@@ -24,9 +24,15 @@ for (const folder of contextMenuFolders) {
 	for (const file of commandFiles) {
 		const contextMenu = require(`./contextmenus/${folder}/${file}`);
 		const type = folder.toUpperCase();
-		if (type === "user") contextMenu.type = 1;
-		else if (type === "message") contextMenu.type = 2;
-		client.commands.set(contextMenu.name, contextMenu);
+		contextMenu.data = { name: contextMenu.name };
+		if (type === "USER") {
+			contextMenu.data.type = 2;
+		}
+		else if (type === "MESSAGE") {
+			contextMenu.data.type = 3;
+		}
+		delete contextMenu.name;
+		client.commands.set(contextMenu.data.name, contextMenu);
 	}
 }
 

@@ -8,33 +8,36 @@ module.exports = {
 	async execute(client) {
 		// Register commands
 		const commands = [];
-		const commandFolders = fs.readdirSync("./slashcommands");
+		/* const commandFolders = fs.readdirSync("./slashcommands");
 		for (const folder of commandFolders) {
 			const commandFiles = fs.readdirSync(`./slashcommands/${folder}`).filter(file => file.endsWith(".js"));
 			for (const file of commandFiles) {
 				const command = require(`../slashcommands/${folder}/${file}`);
 				commands.push(command.data);
 			}
-		}
-		const guildWhitelist = Array.from(config.guildWhitelist);
-		// (async function() {
-		// 	for (const element of guildWhitelist) {
-		// 		const guild = await client.guilds.cache.get(element);
-		// 		guild.commands.set(commands);
-		// 	}
-		// }()).then(console.log("Commands registered.")).catch(err => console.error(err));
+		}*/
+		client.commands.each((cmd) => {
+			commands.push(cmd.data);
+		});
 
+		const guildWhitelist = Array.from(config.guildWhitelist);
 		const rest = new REST({ version: "9" }).setToken(process.env.TOKEN);
 
 		(async () => {
 			try {
 				console.log("Started reloading commands.");
+				// Guild commands
 				for (const guildId of guildWhitelist) {
 					await rest.put(
 						Routes.applicationGuildCommands(client.user.id, guildId),
 						{ body: commands },
 					);
 				}
+				// Global commands
+				/* await rest.put(
+					Routes.applicationCommands(client.user.id),
+					{ body: commands },
+				); */
 
 				console.log("Succesfully reloaded commands.");
 			} catch (error) {
