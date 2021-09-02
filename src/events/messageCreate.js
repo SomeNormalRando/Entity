@@ -36,7 +36,7 @@ module.exports = {
 		const commandName = args.shift().toLowerCase();
 
 		if (commandName === mention) {
-			message.channel.send("Message commands have been removed, use slash commands instead.\nhttps://imgur.com/KS2M6dC");
+			message.channel.send("Message commands have been removed, use slash commands instead.\nhttps://imgur.com/KS2M6dC \nIf slash commands don't appear, try reinviting the bot with this link:\nhttps://discord.com/oauth2/authorize?client_id=812960290718482483&permissions=1007021175&scope=applications.commands%20bot");
 		}
 
 		// Owners-only commands
@@ -103,7 +103,7 @@ module.exports = {
 				embeds.forEach((element) => message.channel.send({ embeds: [element] }));
 			}
 		} else if (commandName === "google") {
-			const searchQuery = args.join("%20");
+			const searchQuery = encodeURIComponent(args.join(" "));
 			message.reply(`https://google.com/search?q=${searchQuery}`);
 		}
 	},

@@ -12,7 +12,7 @@ module.exports = {
 
 			const command = await client.commands.get(interaction.commandName);
 
-			if (command.guildOnly === true && interaction.channel.type === "dm") return interaction.reply("This command can only be used in a server.");
+			if (command.guildOnly === true && !interaction.inGuild()) return interaction.reply("This command can only be used in a server.");
 
 			if (command.userPerms) {
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
@@ -32,8 +32,10 @@ module.exports = {
 					// Type 6 is type USER
 					if (type === 6) {
 						optionVal = interaction.options.getMember(element.name);
-					}
-					else {
+					// Type 7 is type CHANNEL
+					} else if (type === 7) {
+						optionVal = interaction.options.getChannel(element.name);
+					} else {
 						optionVal = optionVal.value;
 					}
 					args[element.name] = optionVal;

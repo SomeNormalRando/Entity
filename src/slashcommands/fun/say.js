@@ -1,11 +1,11 @@
 module.exports = {
 	data: {
-		name: 'say',
-		description: 'Make the bot say something of your choice',
+		name: "say",
+		description: "Make the bot say something of your choice",
 		options: [{
-			name: 'content',
-			type: 'STRING',
-			description: 'The content to make the bot say',
+			name: "content",
+			type: "STRING",
+			description: "The content to make the bot say",
 			required: true,
 		}]
 	},

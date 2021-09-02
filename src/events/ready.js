@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 const { config } = require("../index.js");
@@ -8,42 +7,48 @@ module.exports = {
 	async execute(client) {
 		// Register commands
 		const commands = [];
-		/* const commandFolders = fs.readdirSync("./slashcommands");
-		for (const folder of commandFolders) {
-			const commandFiles = fs.readdirSync(`./slashcommands/${folder}`).filter(file => file.endsWith(".js"));
-			for (const file of commandFiles) {
-				const command = require(`../slashcommands/${folder}/${file}`);
-				commands.push(command.data);
+
+		// Toggle to register global commands or guild commands
+		const registerGlobal = process.argv.includes("g") || process.argv.includes("global");
+
+		if (!process.argv.includes("c")) {
+			if (registerGlobal) {
+				client.commands.each((cmd) => {
+					if (!cmd.beta && !cmd.noRegister) commands.push(cmd.data);
+				});
+			} else {
+				client.commands.each((cmd) => {
+					if (!cmd.noRegister) commands.push(cmd.data);
+				});
 			}
-		}*/
-		client.commands.each((cmd) => {
-			commands.push(cmd.data);
-		});
+		}
 
 		const guildWhitelist = Array.from(config.guildWhitelist);
 		const rest = new REST({ version: "9" }).setToken(process.env.TOKEN);
 
-		(async () => {
-			try {
-				console.log("Started reloading commands.");
+
+		try {
+			if (registerGlobal === true) {
+				// Global commands
+				console.log("Started reloading global commands.");
+				await rest.put(
+					Routes.applicationCommands(client.user.id),
+					{ body: commands },
+				);
+			} else {
 				// Guild commands
+				console.log("Started reloading guild commands.");
 				for (const guildId of guildWhitelist) {
 					await rest.put(
 						Routes.applicationGuildCommands(client.user.id, guildId),
 						{ body: commands },
 					);
 				}
-				// Global commands
-				/* await rest.put(
-					Routes.applicationCommands(client.user.id),
-					{ body: commands },
-				); */
-
-				console.log("Succesfully reloaded commands.");
-			} catch (error) {
-				console.error(error);
 			}
-		})();
+			console.log("Succesfully reloaded commands.");
+		} catch (error) {
+			console.error(error);
+		}
 		// Log message when everything is done
 		console.log(`Bot ready, logged in as ${client.user.tag}.`);
 	},
