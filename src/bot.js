@@ -2,7 +2,7 @@
 // Require needed modules
 const Discord = require("discord.js");
 const fs = require("fs");
-const { client, token } = require("./index.js");
+const { client, env } = require("./index.js");
 
 client.cooldowns = new Discord.Collection();
 
@@ -47,8 +47,9 @@ for (const file of eventFiles) {
 	}
 }
 
+
 // Login
-client.login(token);
+client.login(env.TOKEN);
 // Unhandled promise rejection handling
 process.on("unhandledRejection", error => {
 	console.error("Unhandled promise rejection:", error);

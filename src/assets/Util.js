@@ -1,19 +1,26 @@
 const { MessageActionRow } = require("discord.js");
-const { defaultPrefix } = require("../config.json");
-const { Prefixes } = require("../database/dbIndex.js");
+
+Array.prototype.random = function() {
+	return this[Math.floor(Math.random() * this.length)];
+};
 
 /**
- * Converts snake case to title case
- * @returns {string}
+ * Converts SNAKE_CASE to Title Case
+ * @param {Array.<regex>} exceptions Patterns to ignore when converting
+ * @returns {string} The string in title case
+ * @memberof String
  */
-String.prototype.toTitleCase = () => {
+String.prototype.toTitleCase = function(...exceptions) {
+	const result = [];
 	let str = this.toLowerCase();
 	str = str.replace(/_/g, " ");
 	str = str.split(" ");
-	str.forEach((element, index) => {
-		str[index] = element.charAt(0).toUpperCase() + element.substr(1);
-	});
-	return str.join(" ");
+	for (const element of str) {
+		const a = exceptions.some(e => e.test(element));
+		if (a) result.push(element.toUpperCase());
+		else result.push(element.charAt(0).toUpperCase() + element.substr(1));
+	}
+	return result.join(" ");
 };
 module.exports = {
 	/**
@@ -39,7 +46,7 @@ module.exports = {
 	/**
 	 * Converts snake case to title case
 	 * @param {string} str String to normalize
-	 * @returns {string}
+	 * @returns {string} The string in title case
 	 */
 	normalizeStr(str) {
 		str = str.toLowerCase();

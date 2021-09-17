@@ -48,7 +48,8 @@ module.exports = {
 			} catch (error) {
 				console.error(error);
 				await interaction.reply({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => {
-					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => console.error(err));
+					console.error(err);
+					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true });
 				});
 			}
 		// If interaction is a context menu

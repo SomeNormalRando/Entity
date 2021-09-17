@@ -32,6 +32,14 @@ module.exports = {
 			embed.setDescription("Voice channels and category channels can't have a slowmode.");
 			return interaction.reply({ embeds: [embed], ephemeral: true });
 		}
+
+		// User permission check
+		if (!channel.permissionsFor(interaction.member).has("MANAGE_CHANNELS")) {
+			embed.setTitle("You don't have sufficient permissions");
+			embed.setDescription(`You don't have the ${Discord.Formatters.inlineCode("MANAGE_CHANNELS")} permission in ${channel.toString()}.`);
+		}
+
+		// Bot permission check
 		if (!channel.permissionsFor(interaction.guild.me).has("MANAGE_CHANNELS")) {
 			embed.setTitle("I don't have sufficient permissions");
 			embed.setDescription("I need the permission `MANAGE_CHANNELS` to set the slowmode of a channel.");

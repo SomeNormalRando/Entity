@@ -43,8 +43,7 @@ module.exports = {
 		if (!config.owners.includes(message.author.id)) return;
 		// Eval
 		if (commandName === "eval") {
-			const client = { ...message.client };
-			client.token = "[REDACTED]";
+			const client = message.client;
 			let evalArgs = message.content.substring(prefix.length + commandName.length + 1);
 			let sendWithoutEmbed = false;
 			if (evalArgs.split(" ")[0] === "-s") {

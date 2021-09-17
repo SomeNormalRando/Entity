@@ -41,7 +41,7 @@ module.exports = {
 		// Determine if user wants to purge or not
 		const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time: 3000 });
 		collector.on("collect", i => {
-			if (i.user.id !== interaction.user.id) return i.reply({ content: "These buttons aren't for you.", ephemeral: true });
+			if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
 			if (i.customId === uniqueId_yes) {
 				Util.disableAllButtons(row);
 				interaction.channel.bulkDelete(args.amount, true)

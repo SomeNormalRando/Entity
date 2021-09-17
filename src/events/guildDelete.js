@@ -1,13 +1,9 @@
 const Discord = require("discord.js");
+const { env } = require("../index.js");
 module.exports = {
-	data: {
-		name: "serverinfo",
-		description: "Gives info for the current server."
-	},
-	guildOnly: true,
-	async execute(interaction) {
-		// Define variables
-		const guild = interaction.guild;
+	name: "guildCreate",
+	once: false,
+	async execute(guild, client) {
 		const owner = await guild.fetchOwner().then(result => result);
 
 		// Guild features
@@ -52,6 +48,8 @@ module.exports = {
 		}
 
 		// Send embed
-		await interaction.reply({ embeds: [embed] });
+		client.channels.cache.get(env.LOG_CHANNEL).send({
+			content: Discord.Formatters.bold("EVENT `guildDelete` EMITTED\nGuild:"), embeds: [embed]
+		});
 	},
 };

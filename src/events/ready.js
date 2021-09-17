@@ -1,6 +1,6 @@
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-const { config } = require("../index.js");
+const { env } = require("../index.js");
 module.exports = {
 	name: "ready",
 	once: true,
@@ -23,8 +23,8 @@ module.exports = {
 			}
 		}
 
-		const guildWhitelist = Array.from(config.guildWhitelist);
-		const rest = new REST({ version: "9" }).setToken(process.env.TOKEN);
+		const guildWhitelist = Array.from(env.guildWhitelist);
+		const rest = new REST({ version: "9" }).setToken(env.TOKEN);
 
 
 		try {

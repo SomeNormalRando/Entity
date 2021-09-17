@@ -1,9 +1,8 @@
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
-const querystring = require("querystring");
 const { config } = require("../../index.js");
 const trim = (str, max) => {
-	str = str.replace(/(\s)\[(.+)\](\W)/g, "$1$2$3");
+	str = str.replace(/\[(.+?)\](\W|$)/gm, "$1$2");
 	return (str.length > max) ? `${str.slice(0, max - 3)}...` : str;
 };
 module.exports = {
@@ -24,9 +23,9 @@ module.exports = {
 			.setColor(config.embedColour)
 			.setTimestamp()
 			.setFooter(`Requested by ${interaction.user.tag}`, `${interaction.user.displayAvatarURL({ dynamic: true })}`);
-		const query = querystring.stringify({ term: term });
+		const query = encodeURIComponent(term);
 
-		const { list } = await fetch(`https://api.urbandictionary.com/v0/define?${query}`)
+		const { list } = await fetch(`https://api.urbandictionary.com/v0/define?term=${query}`)
 			.then(response => response.json())
 			.catch(error => console.error(error));
 
