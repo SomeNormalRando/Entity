@@ -1,5 +1,5 @@
-node_modules
+node_modules/
 env.json
 database.sqlite
-Discord_Bot.code-workspace
+*.code-workspace
 rpc.js

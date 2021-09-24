@@ -1,3 +1,4 @@
+"use strict";
 module.exports = {
 	data: {
 		name: "lmgtfy",
@@ -12,6 +13,7 @@ module.exports = {
 	async execute(interaction, args) {
 		const link = "https://letmegooglethat.com?q=";
 		const query = encodeURIComponent(args.query);
-		interaction.reply(link + query);
+
+		await interaction.reply(link + query);
 	},
 };

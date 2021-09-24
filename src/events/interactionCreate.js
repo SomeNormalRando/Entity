@@ -20,13 +20,18 @@ module.exports = {
 				for (const element of command.userPerms) {
 					if (!userPerms.has(command.userPerms)) missingPerms.push(Discord.Formatters.inlineCode(Util.normalizeStr(element)));
 				}
-				if (missingPerms.length) return interaction.reply({ content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`, ephemeral: true });
+				if (missingPerms.length) {
+					return interaction.reply({
+						content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`,
+						ephemeral: true
+					});
+				}
 			}
 
 			const args = {};
 			if (command.data.options) {
 				for (const element of command.data.options) {
-					const type = element.type;
+					const { type } = element;
 					let optionVal = interaction.options.get(element.name);
 					if (!optionVal) continue;
 					// Type 6 is type USER
@@ -59,7 +64,9 @@ module.exports = {
 
 			const command = await client.commands.get(interaction.commandName);
 
-			if (command.guildOnly === true && interaction.channel.type === "dm") return interaction.reply("This command can only be used in a server.");
+			if (command.guildOnly === true && interaction.channel.type === "dm") {
+				return interaction.reply("This command can only be used in a server.");
+			}
 
 			if (command.userPerms) {
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
@@ -67,7 +74,12 @@ module.exports = {
 				for (const element of command.userPerms) {
 					if (!userPerms.has(command.userPerms)) missingPerms.push(Discord.Formatters.inlineCode(Util.normalizeStr(element)));
 				}
-				if (missingPerms.length) return interaction.reply({ content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`, ephemeral: true });
+				if (missingPerms.length) {
+					return interaction.reply({
+						content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`,
+						ephemeral: true
+					});
+				}
 			}
 
 			const args = interaction.targetType === "USER" ? interaction.options.getMember("user") : interaction.options.getMessage("message");
@@ -78,7 +90,8 @@ module.exports = {
 				console.error(error);
 				await interaction.reply({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => {
 					console.error(err);
-					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => console.error(err));
+					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true })
+						.catch(err => console.error(err));
 				});
 			}
 		}

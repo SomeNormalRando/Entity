@@ -1,3 +1,4 @@
+"use strict";
 const Discord = require("discord.js");
 module.exports = {
 	data: {
@@ -21,7 +22,7 @@ module.exports = {
 	},
 	guildOnly: true,
 	userPerms: ["MANAGE_CHANNELS"],
-	async execute(interaction, args) {
+	execute(interaction, args) {
 		const channel = args.channel || interaction.channel;
 
 		const embed = new Discord.MessageEmbed();
@@ -48,7 +49,9 @@ module.exports = {
 
 		channel.setRateLimitPerUser(args.interval, `${interaction.user.username} used /slowmode`)
 			.then(textChannel => {
-				embed.setDescription(`Slowmode for ${textChannel.toString()} successfully set to ${args.interval} ${args.interval === 1 ? "second" : "seconds"}.`);
+				embed.setDescription(
+					`Slowmode for ${textChannel.toString()} successfully set to ${args.interval} ${args.interval === 1 ? "second" : "seconds"}.`
+				);
 				interaction.reply({ embeds: [embed] });
 			})
 			.catch(err => {

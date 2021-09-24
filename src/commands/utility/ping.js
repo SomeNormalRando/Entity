@@ -1,14 +1,19 @@
+"use strict";
 module.exports = {
-	name: 'ping',
-	aliases: [],
-	description: 'Used to test if the bot is online.',
-	usage: '',
-	args: false,
-	cooldown: 3,
-	guildOnly: false,
-	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
-	execute(message, args) {
-		message.reply(`Pong! Bot is online.`)
-			.then(msg => msg.edit(msg.content += `\nLatency is **${msg.createdTimestamp - message.createdTimestamp} milliseconds**.\nAPI latency is **${Math.round(message.client.ws.ping)} milliseconds**.`));
+	data: {
+		name: "ping",
+		description: "Used to test if the bot is online",
 	},
+	async execute(interaction) {
+		await interaction.reply("Pong! Bot is online.");
+		let replyMsg;
+		await interaction.fetchReply()
+			// eslint-disable-next-line no-return-assign
+			.then(reply => replyMsg = reply);
+
+		const latency = `Latency is **${replyMsg.createdTimestamp - interaction.createdTimestamp} milliseconds**.`;
+		const apiLatency = `API latency is **${Math.round(interaction.client.ws.ping)} milliseconds**.`;
+
+		await interaction.editReply(`${replyMsg.content}\n${latency}\n${apiLatency}`);
+	}
 };

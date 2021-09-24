@@ -1,26 +1,25 @@
-const Discord = require('discord.js')
+"use strict";
+const Discord = require("discord.js");
 module.exports = {
-	name: 'avatar',
-	aliases: ['icon', 'pfp', 'av', 'profilepicture', 'profilepic'],
-	description: "Displays a user's avatar, or yours if no one is mentioned.",
-	usage: '[user]',
-	args: false,
-	cooldown: 5,
-	guildOnly: false,
-	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
-	async execute(message, args) {
+	data: {
+		name: "avatar",
+		description: "Get a user's avatar",
+		options: [{
+			name: "user",
+			type: "USER",
+			description: "User to get the avatar",
+			required: false,
+		}],
+	},
+	execute(interaction, args) {
 		let user;
-		if (args.length) {
-			user = message.mentions.users.first() || await message.client.users.fetch(args[0]) || message.author;
-		} else {
-			user = message.author
-		}
-
-		const avatarEmbed = new Discord.MessageEmbed()
-			.setColor('#2f3136')
-			.setAuthor(user.tag, user.displayAvatarURL({format: "png", dynamic: true}))
-			.setTitle(`Avatar`)
-			.setImage(user.displayAvatarURL({format: "png", dynamic: true}) + '?size=1024')
-		message.channel.send({ embeds: [avatarEmbed] });
+		if (!args.user) user = interaction.member.user;
+		else user = args.user.user;
+		const embed = new Discord.MessageEmbed()
+			.setColor("#2F3136")
+			.setAuthor(user.tag, user.displayAvatarURL({ format: "png", dynamic: true }))
+			.setTitle("Avatar")
+			.setImage(`${user.displayAvatarURL({ format: "png", dynamic: true })}?size=1024`);
+		interaction.reply({ embeds: [embed] });
 	},
 };

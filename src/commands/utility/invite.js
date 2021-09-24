@@ -1,3 +1,4 @@
+"use strict";
 const Discord = require("discord.js");
 const { config } = require("../../index.js");
 module.exports = {
@@ -5,7 +6,7 @@ module.exports = {
 		name: "invite",
 		description: "Gives you my invite link",
 	},
-	async execute(interaction) {
+	execute(interaction) {
 		const embed = new Discord.MessageEmbed()
 			.setTitle("Bot invite link:")
 			.setColor("#003fff")

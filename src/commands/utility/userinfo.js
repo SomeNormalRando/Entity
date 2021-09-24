@@ -1,53 +1,63 @@
-const Discord = require('discord.js')
+const Discord = require("discord.js");
 module.exports = {
-	name: 'userinfo',
-	aliases: ['user', 'whois'],
-	description: 'Gives info about a user, or yourself is no one is mentioned',
-	usage: '[user]',
-	args: false,
-	cooldown: 3,
+	data: {
+		name: "userinfo",
+		description: "Gives info for a user.",
+		options: [{
+			name: "user",
+			type: "USER",
+			description: "The user to show info about",
+			required: false,
+		}]
+	},
 	guildOnly: true,
-	botPermissions: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'],
-	async execute(message, args) {
-		let user;
-		let guildMember;
-		if (args.length) {
-			user = message.mentions.users.first() || await message.client.users.fetch(args[0]) || message.author;
-			guildMember = message.mentions.members.first() || await message.guild.members.fetch(args[0]) || message.member;
-		} else {
-			user = message.author;
-			guildMember = message.member;
+	async execute(interaction, args) {
+		// Define user and guildMember variables for convenience
+		const guildMember = args.user || interaction.member;
+		const user = guildMember.user;
+
+		// Permissions
+		const permissions = [];
+		for (const permission of guildMember.permissions.toArray().sort()) {
+			permissions.push(permission.toTitleCase(/VAD/i, /TTS/i));
 		}
 
-		let perms = Array.from(guildMember.permissions).sort();
-		for (var i = perms.length; i--;){
-			perms[i] = '\`' + perms[i] + '\`';
-		}
-		let permissions = perms.join(', ');
+		// Roles
+		const roleIds = Discord.Util.discordSort(guildMember.roles.cache).filter(e => e.id !== interaction.guild.id);
+		const roles = roleIds.map(role => role.toString());
 
-		let	roles = guildMember.roles.cache.map(role => role.id);
-		roles.pop();
-		let rolesMention = roles.map(i => '<@&' + i + '>').join(', ');
-		const userEmbed = new Discord.MessageEmbed()
+		// Construct embed
+		const embed = new Discord.MessageEmbed()
 			.setColor(guildMember.displayHexColor)
 			.setTitle(user.tag)
-			.setThumbnail(user.displayAvatarURL({ format: "png", dynamic: true}))
+			.setDescription(guildMember.toString())
+			.setThumbnail(user.displayAvatarURL({ format: "png", dynamic: true }))
 			.addFields(
-				{ name: 'Registered', value: `<t:${Math.floor(user.createdTimestamp/1000)}:R>`},
-				{ name: 'Joined', value: `<t:${Math.floor(guildMember.joinedTimestamp/1000)}:R>`},
-				{ name: 'Mention', value: guildMember.toString(), inline: true},
-				{ name: 'Display Colour(Hex)', value: guildMember.displayHexColor, inline: true},
-				{ name: `Roles (${roles.length})`, value: rolesMention},
-				{ name: 'Permissions', value: permissions},
+				{ name: "Registered", value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>` },
+				{ name: "Joined", value: `<t:${Math.floor(guildMember.joinedTimestamp / 1000)}:R>` },
+				{ name: "Display Colour(Hex)", value: guildMember.displayHexColor, inline: true },
+				{ name: `Roles (${roles.length})`, value: roles.reverse().join(" ") },
+				{ name: "Permissions", value: permissions.join(", ") },
 			)
 			.setTimestamp()
-			.setFooter(`User ID: ${user.id}`)
+			.setFooter(`User ID: ${user.id}`);
 
-		let acknowledgements = [];
-		if (guildMember.premiumSince) {
-			acknowledgements.push(`Boosting server since <t:${Math.floor(guildMember.premiumSinceTimestamp/1000)}:R>`)
+		// Ackowledgements (extra variable info to add)
+		const acknowledgements = [];
+
+		if (user.id === "728910425780912199") acknowledgements.push(`Owner of ${interaction.client.user.username}`);
+		if (interaction.guild.ownerId === user.id) {
+			acknowledgements.push("Server Owner");
 		}
-		if (acknowledgements.length) userEmbed.addField('Acknowledgements', acknowledgements.join(', '))
-		message.reply({ embeds: [userEmbed] });
+		if (guildMember.permissions.has("ADMINISTRATOR")) {
+			acknowledgements.push("Server Administrator");
+		}
+		if (guildMember.premiumSince) {
+			acknowledgements.push(`Boosting server since ${Discord.Formatters.time(Math.round(guildMember.premiumSinceTimestamp / 1000), "R")}`);
+		}
+
+		if (acknowledgements.length) embed.addField("Acknowledgements", acknowledgements.join(", "));
+
+		interaction.reply({ embeds: [embed] });
 	},
 };

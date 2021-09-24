@@ -1,13 +1,16 @@
+"use strict";
 module.exports = {
-	name: 'say',
-	aliases: [],
-	description: 'Makes the bot say something of your choice.',
-	usage: '<text>',
-	args: true,
-	cooldown: 3,
-	guildOnly: true,
-	execute(message, args) {
-		let content = args.join(" ");
-		message.channel.send(`${content} \n*- ${message.author}*`);
+	data: {
+		name: "say",
+		description: "Make the bot say something of your choice",
+		options: [{
+			name: "content",
+			type: "STRING",
+			description: "The content to make the bot say",
+			required: true,
+		}]
+	},
+	async execute(interaction, args) {
+		await interaction.reply(args.content);
 	},
 };

@@ -1,31 +1,31 @@
-const Discord = require('discord.js');
-const fetch = require('node-fetch');
+"use strict";
+const Discord = require("discord.js");
+const fetch = require("node-fetch");
+
+const { config } = require("../../index.js");
+const url = "https://aws.random.cat/meow";
 module.exports = {
-	name: 'cat',
-	description: 'Get images of random cats! Images from https://aws.random.cat.',
-	aliases: ['cats', 'kitty', 'meow', 'purr'],
-	usage: '',
-	cooldown: 3,
-	async execute(message, args) {
-		const { file } = await fetch('https://aws.random.cat/meow') || {}
-			.then(response => response.json()
-				.catch(err => {
-					console.error(err);
-				}),
-			)
+	data: {
+		name: "cat",
+		description: "Get some cute cat pictures"
+	},
+	async execute(interaction) {
+		const { file } = await fetch(url)
+			.then(response => response.json().catch(err => console.error(err)))
 			.catch(err => {
 				console.error(err);
 			});
 
 		if (file) {
 			const catEmbed = new Discord.MessageEmbed()
-				.setColor('#2F3136')
+				.setTitle("Your random cat")
+				.setColor(config.embedColour)
 				.setImage(file)
-				.setFooter(`Requested by ${message.author.tag}`, `${message.author.displayAvatarURL({ dynamic: true })}`)
-				.setTimestamp();
-			message.reply({ embeds: [catEmbed] });
+				.setTimestamp()
+				.setFooter(`Powered by ${url}`);
+			interaction.reply({ embeds: [catEmbed] });
 		} else {
-			message.reply('An error occured while fetching your cat.');
+			interaction.reply({ content: "An error occured while fetching your cat.", ephemeral: true });
 		}
 	},
 };

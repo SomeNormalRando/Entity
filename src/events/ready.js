@@ -1,3 +1,4 @@
+"use strict";
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 const { env } = require("../index.js");
@@ -5,27 +6,26 @@ module.exports = {
 	name: "ready",
 	once: true,
 	async execute(client) {
-		// Register commands
+		/* Register commands */
 		const commands = [];
 
 		// Toggle to register global commands or guild commands
 		const registerGlobal = process.argv.includes("g") || process.argv.includes("global");
+		const clearCommands = !process.argv.includes("c") || !process.argv.includes("clear");
 
-		if (!process.argv.includes("c")) {
+		if (clearCommands) {
 			if (registerGlobal) {
-				client.commands.each((cmd) => {
-					if (!cmd.beta && !cmd.noRegister) commands.push(cmd.data);
+				client.commands.each(cmd => {
+					if (!cmd.indev && !cmd.dontRegister) commands.push(cmd.data);
 				});
 			} else {
-				client.commands.each((cmd) => {
-					if (!cmd.noRegister) commands.push(cmd.data);
+				client.commands.each(cmd => {
+					if (!cmd.dontRegister) commands.push(cmd.data);
 				});
 			}
 		}
 
-		const guildWhitelist = Array.from(env.guildWhitelist);
 		const rest = new REST({ version: "9" }).setToken(env.TOKEN);
-
 
 		try {
 			if (registerGlobal === true) {
@@ -37,8 +37,10 @@ module.exports = {
 				);
 			} else {
 				// Guild commands
+				const guildWhitelist = Array.from(env.guildWhitelist);
 				console.log("Started reloading guild commands.");
 				for (const guildId of guildWhitelist) {
+					/* eslint-disable-next-line no-await-in-loop */
 					await rest.put(
 						Routes.applicationGuildCommands(client.user.id, guildId),
 						{ body: commands },
@@ -49,7 +51,11 @@ module.exports = {
 		} catch (error) {
 			console.error(error);
 		}
-		// Log message when everything is done
-		console.log(`Bot ready, logged in as ${client.user.tag}.`);
+
+		/* Log message when everything is done */
+		console.log(`Bot logged in as ${client.user.tag}.\n`);
+
+		console.log("█▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█");
+		console.log("██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █ \n");
 	},
 };

@@ -1,6 +1,8 @@
+/* eslint-disable no-extend-native */
+"use strict";
 const { MessageActionRow } = require("discord.js");
 
-Array.prototype.random = function() {
+Array.prototype.random = function random() {
 	return this[Math.floor(Math.random() * this.length)];
 };
 
@@ -10,7 +12,7 @@ Array.prototype.random = function() {
  * @returns {string} The string in title case
  * @memberof String
  */
-String.prototype.toTitleCase = function(...exceptions) {
+String.prototype.toTitleCase = function toTitleCase(...exceptions) {
 	const result = [];
 	let str = this.toLowerCase();
 	str = str.replace(/_/g, " ");
@@ -23,6 +25,21 @@ String.prototype.toTitleCase = function(...exceptions) {
 	return result.join(" ");
 };
 module.exports = {
+	/**
+	 * Fills an array from an object's keys n times, where n is the value of the key
+	 * @param {Object} obj Object to generate the array from, for example { "foo": 2, "bar": 1, 42: 2 } produces ["foo", "foo", "bar", 42, 42]
+	 * @returns {Array} The generated array
+	 */
+	fillArray(obj) {
+		const result = [];
+		for (const element of Object.keys(obj)) {
+			const amount = obj[element];
+			for (let i = 0; i < amount; i++) {
+				result.push(element);
+			}
+		}
+		return result;
+	},
 	/**
 	 * Removes markdown from a string
 	 * @param {string} str String to remove markdown from
@@ -38,24 +55,11 @@ module.exports = {
 			/`(.*)`/,
 			/```(.*)```/,
 		];
+		let result = str;
 		for (const regex of regexes) {
-			str = str.replace(regex, "$1");
+			result = result.replace(regex, "$1");
 		}
 		return str;
-	},
-	/**
-	 * Converts snake case to title case
-	 * @param {string} str String to normalize
-	 * @returns {string} The string in title case
-	 */
-	normalizeStr(str) {
-		str = str.toLowerCase();
-		str = str.replace(/_/g, " ");
-		str = str.split(" ");
-		str.forEach((element, index) => {
-			str[index] = element.charAt(0).toUpperCase() + element.substr(1);
-		});
-		return str.join(" ");
 	},
 	/**
 	 * Disables all buttons or a specific button in a MessageActionRow
@@ -63,9 +67,9 @@ module.exports = {
 	 * @param {...MessageActionRow} rows The row(s)
 	 */
 	disableButtons(id, ...rows) {
-		rows.forEach((row) => {
+		rows.forEach(row => {
 			for (const button of row.components) {
-				if (button.customId == id) {
+				if (button.customId === id) {
 					button.setDisabled(true);
 				}
 			}
@@ -77,7 +81,7 @@ module.exports = {
 	 * @returns {MessageActionRow} a
 	 */
 	disableAllButtons(...rows) {
-		rows.forEach((row) => {
+		rows.forEach(row => {
 			for (const button of row.components) {
 				button.setDisabled(true);
 			}

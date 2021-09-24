@@ -1,4 +1,4 @@
-/* eslint-disable prefer-const */
+"use strict";
 const Discord = require("discord.js");
 const { disableButtons, disableAllButtons } = require("../../assets/util.js");
 function addButtons(start, end, row) {
@@ -27,7 +27,7 @@ module.exports = {
 			.setTimestamp();
 
 		// Construct action rows
-		let row1 = new Discord.MessageActionRow(),
+		const row1 = new Discord.MessageActionRow(),
 			row2 = new Discord.MessageActionRow(),
 			row3 = new Discord.MessageActionRow();
 		// Add buttons to the rows
@@ -42,15 +42,15 @@ module.exports = {
 			let hintsLeft = 2;
 
 			// Make a button collector
-			const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time: time });
+			const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
 			collector.on("collect", i => {
 				i.deferUpdate();
 				// If the user who clicked the button isn"t the one who started the game
-				if (i.user.id != interaction.user.id) {
+				if (i.user.id !== interaction.user.id) {
 					return i.reply({ content: "You aren't the one playing this game.", ephemeral: true });
 				}
-				const clickedNum = parseInt(i.customId);
-				if (clickedNum == number) {
+				const clickedNum = parseInt(i.customId, 10);
+				if (clickedNum === number) {
 					collector.stop();
 					embed.setDescription("You guessed the number!");
 					disableAllButtons(row1, row2, row3);
@@ -60,14 +60,12 @@ module.exports = {
 					embed.setDescription(`You lost the game. The number was ${number}.`);
 					disableAllButtons(row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
-				}
-				else {
-					let hint;
-					hint = clickedNum < number ? "low" : "high";
+				} else {
+					const hint = clickedNum < number ? "low" : "high";
 					embed.setDescription(`Your last number was too ${hint}. Try again.`);
 					disableButtons(clickedNum, row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
-					hintsLeft--;
+					hintsLeft -= 1;
 				}
 			});
 			setTimeout(() => {

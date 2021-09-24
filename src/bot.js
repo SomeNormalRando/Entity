@@ -9,11 +9,11 @@ client.cooldowns = new Discord.Collection();
 // Command handling
 client.commands = new Discord.Collection();
 
-const commandFolders = fs.readdirSync("./slashcommands");
+const commandFolders = fs.readdirSync("./commands");
 for (const folder of commandFolders) {
-	const commandFiles = fs.readdirSync(`./slashcommands/${folder}`).filter(file => file.endsWith(".js"));
+	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith(".js"));
 	for (const file of commandFiles) {
-		const command = require(`./slashcommands/${folder}/${file}`);
+		const command = require(`./commands/${folder}/${file}`);
 		changeOptions(command.data);
 		client.commands.set(command.data.name, command);
 	}
@@ -27,8 +27,7 @@ for (const folder of contextMenuFolders) {
 		contextMenu.data = { name: contextMenu.name };
 		if (type === "USER") {
 			contextMenu.data.type = 2;
-		}
-		else if (type === "MESSAGE") {
+		} else if (type === "MESSAGE") {
 			contextMenu.data.type = 3;
 		}
 		delete contextMenu.name;
@@ -59,7 +58,7 @@ function changeOptions(cmd) {
 	if (!Object.prototype.hasOwnProperty.call(cmd, "options")) return;
 	for (let i = 0; i < cmd.options.length; i++) {
 		const option = cmd.options[i];
-		switch(option.type) {
+		switch (option.type) {
 			case "SUB_COMMAND":
 				option.type = 1;
 				changeOptions(option);
