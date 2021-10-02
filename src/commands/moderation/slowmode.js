@@ -1,7 +1,8 @@
 "use strict";
 const Discord = require("discord.js");
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "slowmode",
 		description: "Set the slowmode for a channel",
 		options: [
@@ -15,24 +16,18 @@ module.exports = {
 				name: "channel",
 				description: "The channel to set the slowmode for (defaults to the current channel)",
 				type: "CHANNEL",
+				channelTypes: [0],
 				required: false
 			},
 
 		]
-	},
+	}),
 	guildOnly: true,
 	userPerms: ["MANAGE_CHANNELS"],
 	execute(interaction, args) {
 		const channel = args.channel || interaction.channel;
 
 		const embed = new Discord.MessageEmbed();
-
-		// Channel checks
-		if (["GUILD_CATEGORY", "GUILD_VOICE"].includes(channel.type)) {
-			embed.setTitle("Please select a text channel");
-			embed.setDescription("Voice channels and category channels can't have a slowmode.");
-			return interaction.reply({ embeds: [embed], ephemeral: true });
-		}
 
 		// User permission check
 		if (!channel.permissionsFor(interaction.member).has("MANAGE_CHANNELS")) {

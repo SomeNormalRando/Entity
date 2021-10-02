@@ -1,11 +1,12 @@
 "use strict";
 const Discord = require("discord.js");
 const { config } = require("../../index.js");
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "invite",
 		description: "Gives you my invite link",
-	},
+	}),
 	execute(interaction) {
 		const embed = new Discord.MessageEmbed()
 			.setTitle("Bot invite link:")

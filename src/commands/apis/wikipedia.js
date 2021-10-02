@@ -1,12 +1,13 @@
 "use strict";
 const fetch = require("node-fetch");
 const Discord = require("discord.js");
-const trim = (str, max, url) => {
-	const link = `[......](${url})`;
-	return str.length > max ? `${str.slice(0, max - link.length)}${link}` : str;
-};
+
+const { config } = require("../../index.js");
+const { Util: { SlashCommand, trimStr } } = require("../../index");
+const wikipediaLogo = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/1200px-Wikipedia-logo-v2-en.svg.png";
+
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "wikipedia",
 		description: "Search stuff on Wikipedia",
 		options: [{
@@ -15,12 +16,12 @@ module.exports = {
 			type: "STRING",
 			required: true
 		}]
-	},
+	}),
 	async execute(interaction, args) {
 		await interaction.deferReply();
 
 		// eslint-disable-next-line max-len
-		const wikipediaLogo = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/1200px-Wikipedia-logo-v2-en.svg.png";
+
 		const query = encodeURIComponent(args.query);
 		const searchLink = `https://en.wikipedia.org?search=${query}`;
 
@@ -32,30 +33,34 @@ module.exports = {
 		result = result[Object.keys(result)[0]];
 
 		let extract = result.extract;
-		const embed = new Discord.MessageEmbed().setThumbnail(wikipediaLogo);
+
+		const embed = new Discord.MessageEmbed().setColor(config.embedColour).setThumbnail(wikipediaLogo);
 		if (!extract) {
 			embed
-				.setTitle(`No results found for ${args.query}`)
-				.setDescription(`[Try searching for it](${searchLink})`);
+				.setTitle(trimStr(`No results found for '${args.query}'`, "...", 256))
+				.setDescription(trimStr(`[Try searching for it](${searchLink})`, 4096));
 			return interaction.editReply({ embeds: [embed], ephemeral: true });
 		}
 
+		// Split text into array so that each element starts with a heading
 		extract = extract.split(/^==\s/m);
 		embed
-			.setTitle(result.title)
+			.setTitle(trimStr(result.title, 256, "..."))
 			.setURL(searchLink)
-			.setDescription(trim(extract[0], 4096, searchLink));
+			.setDescription(trimStr(extract[0], 4096, `[...more](${searchLink})`));
 
 		extract.shift();
 		for (const section of extract) {
-			let heading = section.match(/[\w\s]*\s==/)[0];
+			let heading = section.match(/.+?\s==/)[0];
 			let content = section.substring(heading.length);
 			if (content.trim() && heading) {
-				content = trim(content, 1024, searchLink);
-				heading = heading.replace(/([\w\s]*)\s==/, "$1");
-				content = content.replace(/^===\s([\w\s]*)\s===/gm, "__$1__");
-				if (embed.length + heading.length + content.length > 6000) return;
-				embed.addField(heading, content);
+				heading = heading.replace(/^(.+?)\s==/, "__**$1**__");
+				content = trimStr(content, 1024, `[...](${searchLink})`)
+					.replace(/^=== (.+?) ===/gm, "**$1**")
+					.replace(/^==== (.+?) ====/gm, "__$1__");
+
+				if (embed.length + heading.length + content.length > 6000) break;
+				embed.addField(trimStr(heading, 256, "..."), content);
 			}
 		}
 		await interaction.editReply({ embeds: [embed] });

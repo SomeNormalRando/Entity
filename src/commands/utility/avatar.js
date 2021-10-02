@@ -1,7 +1,8 @@
 "use strict";
-const Discord = require("discord.js");
+
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "avatar",
 		description: "Get a user's avatar",
 		options: [{
@@ -10,16 +11,21 @@ module.exports = {
 			description: "User to get the avatar",
 			required: false,
 		}],
-	},
+	}),
 	execute(interaction, args) {
 		let user;
 		if (!args.user) user = interaction.member.user;
 		else user = args.user.user;
-		const embed = new Discord.MessageEmbed()
+		const embed = this.avatar(user);
+
+		interaction.reply({ embeds: [embed] });
+	},
+	avatar(user) {
+		const Discord = require("discord.js");
+		return new Discord.MessageEmbed()
 			.setColor("#2F3136")
 			.setAuthor(user.tag, user.displayAvatarURL({ format: "png", dynamic: true }))
 			.setTitle("Avatar")
 			.setImage(`${user.displayAvatarURL({ format: "png", dynamic: true })}?size=1024`);
-		interaction.reply({ embeds: [embed] });
-	},
+	}
 };

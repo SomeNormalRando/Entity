@@ -16,6 +16,8 @@ module.exports = {
 	userPerms: ["MANAGE_MESSAGES"],
 	async execute(interaction, args) {
 		const amount = args.amount;
+		const time = 5000;
+
 		// Create unique ids based on channel id and current time
 		const uniqueId = `purgeMessages_${Date.now()}${interaction.channel.id}`;
 		const uniqueId_yes = `${uniqueId}_yes`;
@@ -39,12 +41,13 @@ module.exports = {
 		});
 
 		const message = await interaction.fetchReply();
-		// Determine if user wants to purge or not
-		const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time: 3000 });
+		// Confirmation buttons
+		const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
+
 		collector.on("collect", i => {
 			if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
 			if (i.customId === uniqueId_yes) {
-				Util.disableAllButtons(row);
+				Util.disableButtons("_all", [row]);
 				interaction.channel.bulkDelete(args.amount, true)
 					.then(async deletedAmount => {
 						await i.channel.send({ content: `Deleted ${deletedAmount.size} messages.`, rows: [row] })
@@ -55,22 +58,19 @@ module.exports = {
 					.catch(error => {
 						console.error(error);
 					});
-				collector.stop();
 			} else if (i.customId === uniqueId_no) {
-				Util.disableAllButtons(row);
+				Util.disableButtons("_all", [row]);
 				i.update({ content: "No messages deleted.", components: [row] })
-					.then(msg => setTimeout(() => {
-						msg.delete();
-					}, 3000));
-				collector.stop();
+					.then(msg => setTimeout(() => msg.delete(), 3000));
 			}
-
+			collector.stop();
 		});
-		collector.on("end", async () => {
-			const deleted = await interaction.fetchReply().then(msg => msg.deleted);
-			if (deleted) return;
-			Util.disableAllButtons(row);
-			interaction.editReply({ content: "No messages were deleted because you took too long to respond.", components: [row] });
-		});
+		setTimeout(() => {
+			if (!collector.ended) {
+				collector.stop();
+				Util.disableButtons("_all", [row]);
+				interaction.editReply({ content: "No messages were deleted because you took too long to respond.", components: [row] });
+			}
+		}, time);
 	}
 };

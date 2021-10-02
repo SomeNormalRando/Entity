@@ -1,13 +1,13 @@
 "use strict";
 const Discord = require("discord.js");
-const { disableButtons, disableAllButtons } = require("../../assets/util.js");
+const { Util } = require("../../index.js");
 function addButtons(start, end, row) {
 	for (let i = start; i <= end; i++) {
 		row.addComponents(
 			new Discord.MessageButton()
 				.setCustomId(`${i}`)
 				.setLabel(i.toString())
-				.setStyle("PRIMARY"),
+				.setStyle("SECONDARY"),
 		);
 	}
 }
@@ -52,27 +52,36 @@ module.exports = {
 				const clickedNum = parseInt(i.customId, 10);
 				if (clickedNum === number) {
 					collector.stop();
+					Util.disableButtons("_all", [row1, row2, row3]);
+					Util.changeButtonStyle(number.toString(), "SUCCESS", [row1, row2, row3]);
+
 					embed.setDescription("You guessed the number!");
-					disableAllButtons(row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
 				} else if (hintsLeft < 1) {
 					collector.stop();
+					Util.disableButtons("_all", [row1, row2, row3]);
+					Util.changeButtonStyle(number.toString(), "DANGER", [row1, row2, row3]);
+
 					embed.setDescription(`You lost the game. The number was ${number}.`);
-					disableAllButtons(row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
 				} else {
 					const hint = clickedNum < number ? "low" : "high";
+					Util.disableButtons(clickedNum.toString(), [row1, row2, row3]);
+
+					Util.changeButtonStyle(clickedNum.toString(), "DANGER", [row1, row2, row3]);
+
 					embed.setDescription(`Your last number was too ${hint}. Try again.`);
-					disableButtons(clickedNum, row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
 					hintsLeft -= 1;
 				}
 			});
+
 			setTimeout(() => {
 				if (!collector.ended) {
 					collector.stop();
+					Util.disableButtons("_all", [row1, row2, row3]);
+
 					embed.setDescription(`You took too long to respond. The number was ${number}.`);
-					disableAllButtons(row1, row2, row3);
 					interaction.editReply({ embeds: [embed], components: [row1, row2, row3] });
 				}
 			}, time);

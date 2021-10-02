@@ -1,9 +1,10 @@
 "use strict";
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "ping",
 		description: "Used to test if the bot is online",
-	},
+	}),
 	async execute(interaction) {
 		await interaction.reply("Pong! Bot is online.");
 		let replyMsg;

@@ -2,7 +2,7 @@
 // Require needed modules
 const Discord = require("discord.js");
 const fs = require("fs");
-const { client, env } = require("./index.js");
+const { client, env } = require("./index");
 
 client.cooldowns = new Discord.Collection();
 
@@ -14,7 +14,7 @@ for (const folder of commandFolders) {
 	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith(".js"));
 	for (const file of commandFiles) {
 		const command = require(`./commands/${folder}/${file}`);
-		changeOptions(command.data);
+		command.data = Discord.ApplicationCommandManager.transformCommand(command.data);
 		client.commands.set(command.data.name, command);
 	}
 }
@@ -53,46 +53,3 @@ client.login(env.TOKEN);
 process.on("unhandledRejection", error => {
 	console.error("Unhandled promise rejection:", error);
 });
-
-function changeOptions(cmd) {
-	if (!Object.prototype.hasOwnProperty.call(cmd, "options")) return;
-	for (let i = 0; i < cmd.options.length; i++) {
-		const option = cmd.options[i];
-		switch (option.type) {
-			case "SUB_COMMAND":
-				option.type = 1;
-				changeOptions(option);
-				break;
-			case "SUB_COMMAND_GROUP":
-				option.type = 2;
-				changeOptions(option);
-				break;
-			case "STRING":
-				option.type = 3;
-				break;
-			case "INTEGER":
-				option.type = 4;
-				break;
-			case "BOOLEAN":
-				option.type = 5;
-				break;
-			case "USER":
-				option.type = 6;
-				break;
-			case "CHANNEL":
-				option.type = 7;
-				break;
-			case "ROLE":
-				option.type = 8;
-				break;
-			case "MENTIONABLE":
-				option.type = 9;
-				break;
-			case "NUMBER":
-				option.type = 10;
-				break;
-			default:
-				throw new TypeError("Provided option type is not valid.");
-		}
-	}
-}

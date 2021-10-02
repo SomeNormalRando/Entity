@@ -1,3 +1,4 @@
+"use strict";
 const Discord = require("discord.js");
 const emojiNumbers = {
 	1: "1️⃣",
@@ -122,7 +123,7 @@ module.exports = {
 				const currentChoice = interaction.options.getString(`choice${i}`);
 				if (currentChoice) {
 					const currentEmoji = `${emojiNumbers[i]}`;
-					description += "\n" + currentEmoji + " " + currentChoice;
+					description += `\n${currentEmoji} ${currentChoice}`;
 					emojisToReact.push(currentEmoji);
 				}
 			}
@@ -130,7 +131,7 @@ module.exports = {
 			await interaction.reply({ embeds: [embed] })
 				.then(async () => {
 					const sentMsg = await interaction.fetchReply();
-					emojisToReact.forEach(async (element) => {
+					emojisToReact.forEach(async element => {
 						await sentMsg.react(element);
 					});
 				}).catch(err => console.error(err));

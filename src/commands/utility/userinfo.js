@@ -1,4 +1,4 @@
-const Discord = require("discord.js");
+"use strict";
 module.exports = {
 	data: {
 		name: "userinfo",
@@ -11,19 +11,26 @@ module.exports = {
 		}]
 	},
 	guildOnly: true,
-	async execute(interaction, args) {
-		// Define user and guildMember variables for convenience
-		const guildMember = args.user || interaction.member;
+	execute(interaction, args) {
+		const embed = this.userInfo(args.user || interaction.member);
+		interaction.reply({ embeds: [embed] });
+	},
+	userInfo(guildMember) {
+		const Discord = require("discord.js");
 		const user = guildMember.user;
 
 		// Permissions
 		const permissions = [];
-		for (const permission of guildMember.permissions.toArray().sort()) {
-			permissions.push(permission.toTitleCase(/VAD/i, /TTS/i));
+		if (guildMember.permissions.has("ADMINISTRATOR")) {
+			permissions[0] = "Administrator (all permissions)";
+		} else {
+			for (const permission of guildMember.permissions.toArray().sort()) {
+				permissions.push(permission.toTitleCase(/VAD/i, /TTS/i));
+			}
 		}
 
 		// Roles
-		const roleIds = Discord.Util.discordSort(guildMember.roles.cache).filter(e => e.id !== interaction.guild.id);
+		const roleIds = Discord.Util.discordSort(guildMember.roles.cache).filter(e => e.id !== guildMember.guild.id);
 		const roles = roleIds.map(role => role.toString());
 
 		// Construct embed
@@ -45,8 +52,8 @@ module.exports = {
 		// Ackowledgements (extra variable info to add)
 		const acknowledgements = [];
 
-		if (user.id === "728910425780912199") acknowledgements.push(`Owner of ${interaction.client.user.username}`);
-		if (interaction.guild.ownerId === user.id) {
+		if (require("../../index").env.OWNERS.includes(user.id)) acknowledgements.push(`Developer of ${guildMember.client.user.username}`);
+		if (guildMember.guild.ownerId === user.id) {
 			acknowledgements.push("Server Owner");
 		}
 		if (guildMember.permissions.has("ADMINISTRATOR")) {
@@ -58,6 +65,6 @@ module.exports = {
 
 		if (acknowledgements.length) embed.addField("Acknowledgements", acknowledgements.join(", "));
 
-		interaction.reply({ embeds: [embed] });
-	},
+		return embed;
+	}
 };

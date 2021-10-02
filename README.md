@@ -1,8 +1,11 @@
 # Entity
-This is the repository for my Discord bot, Entity, made in JavaScript with Discord.js as a library.
+Repository for my Discord bot, Entity.
 
-I learnt programming (more specifically the JS language) by making this bot, and still am.
+You can use my code but please don't copy everything.
 
-It's pretty useless at the moment, but I plan to add more commands as I learn more.
+[Invite link](https://discord.com/api/oauth2/authorize?client_id=812960290718482483&permissions=1007021175&scope=applications.commands%20bot) (it isn't always online)
 
-Everything that makes the bot work is in the `src` directory.
+Some stuff you might find interesting:
+- wikipedia command - `src/commands/apis/wikipedia.js`
+- reload command - `src/commands/utility/reload.js`
+- Util file - `src/assets/Util.js`

@@ -1,12 +1,12 @@
 "use strict";
 const Discord = require("discord.js");
-const fs = require("fs");
 
 const { Counting } = require("../database/dbIndex.js");
-const { config } = require("../index.js");
+const { config, env } = require("../index.js");
 module.exports = {
 	name: "messageCreate",
 	once: false,
+	// eslint-disable-next-line no-unused-vars
 	async execute(message, client) {
 		if (message.author.bot || message.webhookID) return;
 		// Counting
@@ -35,41 +35,16 @@ module.exports = {
 
 		/* eslint-disable-next-line curly */
 		if (commandName === mention) {
-			message.channel.send(`Message commands have been removed, use slash commands instead.
+			message.reply(`Message commands have been removed, use slash commands instead.
 			https://imgur.com/KS2M6dC
 			If slash commands don't appear, try reinviting the bot with this link:
 			${config.inviteLink}`);
 		}
 
 		// Owners-only commands
-		if (!config.owners.includes(message.author.id)) return;
+		if (!env.OWNERS.includes(message.author.id)) return;
 		try {
 			switch (commandName) {
-				case "reload": {
-					const cmdName = args.join(" ").toLowerCase();
-					if (!cmdName) return message.reply("Please provide a command to reload.");
-
-					const command = client.commands.get(cmdName);
-					if (!command) return message.reply(`Command \`${cmdName}\` not found.`);
-
-					const commandFolders = fs.readdirSync("./commands");
-
-					const folderName = commandFolders.find(
-						folder => fs.readdirSync(`./commands/${folder}`).includes(`${command.data.name}.js`)
-					);
-
-					delete require.cache[require.resolve(`../commands/${folderName}/${command.data.name}.js`)];
-					try {
-						const newCommand = require(`../commands/${folderName}/${command.data.name}.js`);
-						message.client.commands.set(newCommand.data.name, newCommand);
-						message.reply(`Command \`${newCommand.data.name}\` successfully reloaded.`);
-					} catch (err) {
-						console.error(err);
-						const stringified = Discord.Formatters.codeBlock(err.toString());
-						message.reply(`There was an error while reloading command \`${command.data.name}\`:\n${stringified}`);
-					}
-					break;
-				}
 				// Eval
 				case "eval": {
 					let evalArgs = message.content.substring(prefix.length + commandName.length + 1).split(" ");
@@ -145,7 +120,7 @@ module.exports = {
 			}
 		} catch (err) {
 			console.error(err);
-			message.channel.send(err.toString());
+			message.reply(err.toString());
 		}
 	},
 };

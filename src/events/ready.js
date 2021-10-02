@@ -1,61 +1,63 @@
 "use strict";
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-const { env } = require("../index.js");
+const { env } = require("../index");
 module.exports = {
 	name: "ready",
 	once: true,
-	async execute(client) {
-		/* Register commands */
-		const commands = [];
-
-		// Toggle to register global commands or guild commands
-		const registerGlobal = process.argv.includes("g") || process.argv.includes("global");
-		const clearCommands = !process.argv.includes("c") || !process.argv.includes("clear");
-
-		if (clearCommands) {
-			if (registerGlobal) {
-				client.commands.each(cmd => {
-					if (!cmd.indev && !cmd.dontRegister) commands.push(cmd.data);
-				});
-			} else {
-				client.commands.each(cmd => {
-					if (!cmd.dontRegister) commands.push(cmd.data);
-				});
-			}
+	execute(client) {
+		// Whether to register commands or not
+		if (process.argv.includes("r") || process.argv.includes("register")) {
+			const global = process.argv.includes("g") || process.argv.includes("global");
+			const clear = process.argv.includes("c") || process.argv.includes("clear");
+			reloadCommands(client, global, clear);
 		}
 
-		const rest = new REST({ version: "9" }).setToken(env.TOKEN);
-
-		try {
-			if (registerGlobal === true) {
-				// Global commands
-				console.log("Started reloading global commands.");
-				await rest.put(
-					Routes.applicationCommands(client.user.id),
-					{ body: commands },
-				);
-			} else {
-				// Guild commands
-				const guildWhitelist = Array.from(env.guildWhitelist);
-				console.log("Started reloading guild commands.");
-				for (const guildId of guildWhitelist) {
-					/* eslint-disable-next-line no-await-in-loop */
-					await rest.put(
-						Routes.applicationGuildCommands(client.user.id, guildId),
-						{ body: commands },
-					);
-				}
-			}
-			console.log("Succesfully reloaded commands.");
-		} catch (error) {
-			console.error(error);
-		}
-
-		/* Log message when everything is done */
-		console.log(`Bot logged in as ${client.user.tag}.\n`);
-
+		// Log message on ready
 		console.log("█▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█");
 		console.log("██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █ \n");
+
+		console.log(`Logged in as ${client.user.tag}.`);
 	},
 };
+function reloadCommands(client, global, clear) {
+	const commands = [];
+	const registerType = global === true ? "global" : "guild";
+	console.log(`Started reloading ${registerType} commands.`);
+
+	if (clear !== true) {
+		if (global === true) {
+			client.commands.each(cmd => {
+				if (!cmd.indev && !cmd.dontRegister) commands.push(cmd.data);
+			});
+		} else {
+			client.commands.each(cmd => {
+				if (!cmd.dontRegister) commands.push(cmd.data);
+			});
+		}
+	}
+
+	const rest = new REST({ version: "9" }).setToken(env.TOKEN);
+
+	try {
+		if (global === true) {
+			// Global commands
+			rest.put(
+				Routes.applicationCommands(client.user.id),
+				{ body: commands },
+			);
+		} else {
+			// Guild commands
+			const guildWhitelist = Array.from(env.GUILD_WHITELIST);
+			for (const guildId of guildWhitelist) {
+				rest.put(
+					Routes.applicationGuildCommands(client.user.id, guildId),
+					{ body: commands },
+				);
+			}
+		}
+		console.log(`Succesfully reloaded ${registerType} commands.\n`);
+	} catch (error) {
+		console.error(error);
+	}
+}

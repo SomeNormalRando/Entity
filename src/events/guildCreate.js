@@ -1,53 +1,16 @@
+"use strict";
 const Discord = require("discord.js");
+const { guildInfo } = require("../commands/utility/serverinfo.js");
 const { env } = require("../index.js");
 module.exports = {
 	name: "guildCreate",
 	once: false,
-	async execute(guild, client) {
-		const owner = await guild.fetchOwner().then(result => result);
-
-		// Guild features
-		const guildFeatures = [];
-		for (const feature of guild.features) {
-			guildFeatures.push(feature.toTitleCase());
-		}
-
-		// Contruct embed
-		const embed = new Discord.MessageEmbed()
-			.setColor("#2F3136")
-			.setTitle(guild.name)
-			.setThumbnail(guild.iconURL({ dynamic: true }))
-			.addFields(
-				{ name: "Server", value: `
-				Owner: ${owner} (${owner.user.tag})
-				Created: ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}
-				Members: ${guild.memberCount}
-				` },
-				{ name: "Channels", value: `
-					Text Channels: ${guild.channels.cache.filter((c) => c.type === "GUILD_TEXT").size}
-					Voice Channels:  ${guild.channels.cache.filter((c) => c.type === "GUILD_VOICE").size}
-				`, inline: true },
-				{ name: "Moderation", value: `
-				Verification Level: ${guild.verificationLevel.toTitleCase()}
-				Explicit Content Filter: ${guild.explicitContentFilter.toTitleCase()}
-				` },
-				{ name: "Roles", value: Array.from(guild.roles.cache).length.toString(), inline: true },
-			)
-			.setFooter(`Server ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
-			.setTimestamp();
-
-		// Variable values
-		if (guild.emojis) {
-			embed.addField("Emojis", guild.emojis.cache.map(e => e.toString()).length.toString(), true);
-		}
-		if (guildFeatures.length) {
-			embed.addField("Features", guildFeatures.join(", "));
-		}
-		if (guild.premiumSubscriptionCount) {
-			embed.addField("Boosts", `Level ${guild.premiumTier.substr(5) || "0"} (${guild.premiumSubscriptionCount} boost(s))`, true);
-		}
-
-		// Send embed
-		client.channels.cache.get(env.LOG_CHANNEL).send({ content: Discord.Formatters.bold("EVENT `guildCreate` EMITTED"), embeds: [embed] });
+	execute(guild, client) {
+		guildInfo(guild).then(embed => {
+			client.channels.cache.get(env.LOG_CHANNEL).send({
+				content: Discord.Formatters.bold("EVENT `guildCreate` EMITTED"),
+				embeds: [embed]
+			});
+		});
 	},
 };

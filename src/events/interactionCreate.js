@@ -52,9 +52,9 @@ module.exports = {
 				await command.execute(interaction, args);
 			} catch (error) {
 				console.error(error);
-				await interaction.reply({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => {
+				await interaction.reply({ content: "An error occured while executing this command.", ephemeral: true }).catch(err => {
 					console.error(err);
-					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true });
+					interaction.followUp({ content: "An error occured while executing this command.", ephemeral: true });
 				});
 			}
 		// If interaction is a context menu
@@ -88,9 +88,9 @@ module.exports = {
 				await command.execute(interaction, args);
 			} catch (error) {
 				console.error(error);
-				await interaction.reply({ content: "An error occured while executing that command.", ephemeral: true }).catch(err => {
+				await interaction.reply({ content: "An error occured while executing this command.", ephemeral: true }).catch(err => {
 					console.error(err);
-					interaction.followUp({ content: "An error occured while executing that command.", ephemeral: true })
+					interaction.followUp({ content: "An error occured while executing this command.", ephemeral: true })
 						.catch(err => console.error(err));
 				});
 			}

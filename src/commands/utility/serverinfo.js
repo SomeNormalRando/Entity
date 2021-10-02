@@ -1,14 +1,39 @@
+"use strict";
 const Discord = require("discord.js");
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "serverinfo",
-		description: "Gives info for the current server."
-	},
+		description: "Get server info/stats."
+	}),
 	guildOnly: true,
-	async execute(interaction) {
-		// Define variables
-		const guild = interaction.guild;
-		const owner = await guild.fetchOwner().then(result => result);
+	execute(interaction) {
+		interaction.deferReply();
+		this.guildInfo(interaction.guild).then(embed => interaction.editReply({ embeds: [embed] })).catch(err => {
+			console.error(err);
+			interaction.editReply({ content: "An error occured while executing this command", ephemeral: true });
+		});
+	},
+	async guildInfo(guild) {
+		const owner = await guild.fetchOwner();
+		const channels = await guild.channels.fetch();
+		const roles = await guild.roles.fetch();
+
+		const text = {
+			server: [
+				`Owner: ${owner} (${owner.user.tag})`,
+				`Created: ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}`,
+				`Members: ${guild.memberCount}`
+			],
+			channels: [
+				`Text: ${channels.filter(c => c.type === "GUILD_TEXT").size}`,
+				`Voice: ${channels.filter(c => c.type === "GUILD_VOICE").size}`
+			],
+			moderation: [
+				`Verification Level: ${guild.verificationLevel.toTitleCase()}`,
+				`Explicit Content Filter: ${guild.explicitContentFilter.toTitleCase()}`
+			]
+		};
 
 		// Guild features
 		const guildFeatures = [];
@@ -22,22 +47,12 @@ module.exports = {
 			.setTitle(guild.name)
 			.setThumbnail(guild.iconURL({ dynamic: true }))
 			.addFields(
-				{ name: "Server", value: `
-				Owner: ${owner} (${owner.user.tag})
-				Created: ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}
-				Members: ${guild.memberCount}
-				` },
-				{ name: "Channels", value: `
-					Text Channels: ${guild.channels.cache.filter((c) => c.type === "GUILD_TEXT").size}
-					Voice Channels:  ${guild.channels.cache.filter((c) => c.type === "GUILD_VOICE").size}
-				`, inline: true },
-				{ name: "Moderation", value: `
-				Verification Level: ${guild.verificationLevel.toTitleCase()}
-				Explicit Content Filter: ${guild.explicitContentFilter.toTitleCase()}
-				` },
-				{ name: "Roles", value: Array.from(guild.roles.cache).length.toString(), inline: true },
+				{ name: "Server", value: text.server.join("\n") },
+				{ name: "Channels", value: text.channels.join("\n"), inline: true },
+				{ name: "Moderation", value: text.moderation.join("\n") },
+				{ name: "Roles", value: `${roles.size} (${roles.filter(r => r.hoist).size} hoisted)`, inline: true },
 			)
-			.setFooter(`Server ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
+			.setFooter(`ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
 			.setTimestamp();
 
 		// Variable values
@@ -47,11 +62,9 @@ module.exports = {
 		if (guildFeatures.length) {
 			embed.addField("Features", guildFeatures.join(", "));
 		}
-		if (guild.premiumSubscriptionCount) {
+		if (guild.premiumSubscriptionCount !== 0) {
 			embed.addField("Boosts", `Level ${guild.premiumTier.substr(5) || "0"} (${guild.premiumSubscriptionCount} boost(s))`, true);
 		}
-
-		// Send embed
-		await interaction.reply({ embeds: [embed] });
-	},
+		return embed;
+	}
 };

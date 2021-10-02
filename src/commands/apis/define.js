@@ -1,13 +1,12 @@
 "use strict";
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
-const { config } = require("../../index.js");
-const trim = (str, max) => {
-	str = str.replace(/\[(.+?)\](\W|$)/gm, "$1$2");
-	return str.length > max ? `${str.slice(0, max - 3)}...` : str;
-};
+
+const { config, Util: { SlashCommand, trimStr } } = require("../../index.js");
+const regex = /\[(.+?)\]/g;
+const replaceVal = "$1";
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "define",
 		description: "Get definitions of a word from Urban Dictionary",
 		options: [{
@@ -16,7 +15,7 @@ module.exports = {
 			type: "STRING",
 			required: true
 		}]
-	},
+	}),
 	async execute(interaction, args) {
 		const term = args.term;
 		await interaction.deferReply();
@@ -35,15 +34,16 @@ module.exports = {
 			return interaction.editReply({ embeds: [embed] });
 		}
 		const [answer] = list;
+		const linkStr = `[...](${answer.permalink})`;
 
 		embed
-			.setTitle(answer.word)
+			.setTitle(trimStr(answer.word, 256, "..."))
 			.setURL(answer.permalink)
 			.addFields(
-				{ name: "Definition", value: trim(answer.definition, 1024) },
-				{ name: "Example", value: trim(answer.example, 1024) },
-				{ name: "Rating", value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.` },
-				{ name: "Written On", value: trim(answer.written_on.substring(0, 10), 1024) },
+				{ name: "Definition", value: trimStr(answer.definition, 1024, linkStr).replace(regex, replaceVal) },
+				{ name: "Example", value: trimStr(answer.example, 1024, linkStr).replace(regex, replaceVal) },
+				{ name: "Rating", value: `${answer.thumbs_up} 👍, ${answer.thumbs_down} 👎.` },
+				{ name: "Written On", value: trimStr(answer.written_on.substring(0, 10), 1024, linkStr) },
 			);
 		interaction.editReply({ embeds: [embed] });
 	}

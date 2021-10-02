@@ -1,14 +1,16 @@
 "use strict";
+const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "kill",
 		description: "(Fake) kill someone",
 		options: [{
 			name: "user",
 			type: "USER",
 			description: "The user to kill",
+			required: true
 		}]
-	},
+	}),
 	execute(interaction, args) {
 		const data = [
 			"{user} fell to the ground and died.",
@@ -25,9 +27,9 @@ module.exports = {
 			interaction.reply("You killed yourself.");
 		} else {
 			interaction.reply(
-				data[Math.floor(Math.random() * data.length)]
+				data.random()
 					.replace("{user}", args.user.user.username)
-					.replace("{author}", interaction.member.toString())
+					.replace("{author}", interaction.user.username)
 			);
 		}
 	},
