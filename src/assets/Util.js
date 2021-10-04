@@ -2,7 +2,7 @@
 /* eslint-disable no-extend-native */
 "use strict";
 
-const { ApplicationCommandManager } = require("discord.js");
+const { ApplicationCommandManager, MessageActionRow } = require("discord.js");
 
 /**
  * Gets a random element from an array
@@ -90,13 +90,13 @@ module.exports = {
 	 * Changes the style of the button(s) with the specified id in the specified MessageActionRow(s)
 	 * @param {String} id The custom id of the button(s) to change the style of, '_all' to change all
 	 * @param {String} newStyle The new style for the buttons
-	 * @param {Discord.MessageActionRow[]} rows The row(s) to change the button style
+	 * @param {...Discord.MessageActionRow} rows The row(s) to change the button style
 	 * @returns {Discord.MessageActionRow[]} An array of new MessageActionRow(s) with the style of the button(s) changed
 	 */
-	changeButtonStyle(id, newStyle, rows) {
+	changeButtonStyle(id, newStyle, ...rows) {
 		if (typeof id !== "string") throw new TypeError("Parameter 'id' must be a string.");
 		if (typeof newStyle !== "string") throw new TypeError("Parameter 'newStyle' must be a string.");
-		return this.editRows(rows, row => {
+		return editRows(rows, row => {
 			if (id === "_all") {
 				for (const button of row.components) {
 					button.setStyle(newStyle);
@@ -115,12 +115,12 @@ module.exports = {
 	/**
 	 * Disables the button(s) with the specified id in the specified MessageActionRow(s)
 	 * @param {String} id The custom id of the button(s) to disable, '_all' to disable all
-	 * @param {Discord.MessageActionRow[]} rows The row(s) to disable the button
+	 * @param {...Discord.MessageActionRow} rows The row(s) to disable the button
 	 * @returns {Discord.MessageActionRow[]} An array of new MessageActionRow(s) with the button(s) disabled
 	 */
-	disableButtons(id, rows) {
+	disableButtons(id, ...rows) {
 		if (typeof id !== "string") throw new TypeError("Parameter 'id' must be a string.");
-		return this.editRows(rows, row => {
+		return editRows(rows, row => {
 			if (id === "_all") {
 				for (const button of row.components) {
 					button.setDisabled(true);
@@ -142,13 +142,7 @@ module.exports = {
 	 * @param {Function} fn Function to execute on each MessageActionRow
 	 * @returns {Discord.MessageActionRow[]} An array of new MessageActionRow(s)
 	 */
-	editRows(rows, fn) {
-		const newRows = [];
-		for (const row of rows) {
-			fn(row);
-		}
-		return newRows;
-	},
+	editRows,
 
 	// This is mostly for Intellisense
 	/**
@@ -192,3 +186,10 @@ module.exports = {
 		}
 	}
 };
+function editRows(rows, fn) {
+	const newRows = [];
+	for (const row of rows) {
+		newRows.push(fn(new MessageActionRow(row)));
+	}
+	return newRows;
+}

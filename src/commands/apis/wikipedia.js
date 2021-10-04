@@ -17,6 +17,7 @@ module.exports = {
 			required: true
 		}]
 	}),
+	cooldown: 7,
 	async execute(interaction, args) {
 		await interaction.deferReply();
 
@@ -63,6 +64,9 @@ module.exports = {
 				embed.addField(trimStr(heading, 256, "..."), content);
 			}
 		}
-		await interaction.editReply({ embeds: [embed] });
+		await interaction.editReply({ embeds: [embed] }).catch(async err => {
+			console.error(err);
+			await interaction.editReply("An error occured.");
+		});
 	}
 };

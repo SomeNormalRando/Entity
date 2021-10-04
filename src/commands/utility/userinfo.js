@@ -10,7 +10,8 @@ module.exports = {
 			required: false,
 		}]
 	},
-	guildOnly: true,
+	cooldown: "5",
+	guildOnly: [true],
 	execute(interaction, args) {
 		const embed = this.userInfo(args.user || interaction.member);
 		interaction.reply({ embeds: [embed] });
@@ -42,7 +43,7 @@ module.exports = {
 			.addFields(
 				{ name: "Registered", value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>` },
 				{ name: "Joined", value: `<t:${Math.floor(guildMember.joinedTimestamp / 1000)}:R>` },
-				{ name: "Display Colour(Hex)", value: guildMember.displayHexColor, inline: true },
+				{ name: "Display Colour (Hex)", value: guildMember.displayHexColor.toUpperCase(), inline: true },
 				{ name: `Roles (${roles.length})`, value: roles.reverse().join(" ") },
 				{ name: "Permissions", value: permissions.join(", ") },
 			)

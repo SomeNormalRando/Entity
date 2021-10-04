@@ -1,6 +1,6 @@
 "use strict";
 const Discord = require("discord.js");
-const { Util: { SlashCommand } } = require("../../index");
+const { Util: { SlashCommand }, config } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
 		name: "slowmode",
@@ -27,32 +27,39 @@ module.exports = {
 	execute(interaction, args) {
 		const channel = args.channel || interaction.channel;
 
-		const embed = new Discord.MessageEmbed();
+		const embed = new Discord.MessageEmbed().setColor(config.embedColour);
 
 		// User permission check
 		if (!channel.permissionsFor(interaction.member).has("MANAGE_CHANNELS")) {
-			embed.setTitle("You don't have sufficient permissions");
-			embed.setDescription(`You don't have the ${Discord.Formatters.inlineCode("MANAGE_CHANNELS")} permission in ${channel.toString()}.`);
+			embed.setTitle("You don't have sufficient permissions")
+				.setDescription(`You don't have the ${Discord.Formatters.inlineCode("MANAGE_CHANNELS")} permission in ${channel.toString()}.`);
 		}
 
 		// Bot permission check
 		if (!channel.permissionsFor(interaction.guild.me).has("MANAGE_CHANNELS")) {
-			embed.setTitle("I don't have sufficient permissions");
-			embed.setDescription("I need the permission `MANAGE_CHANNELS` to set the slowmode of a channel.");
+			embed.setTitle("I don't have sufficient permissions")
+				.setDescription("I need the permission `MANAGE_CHANNELS` to set the slowmode of a channel.");
 			return interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 
-		channel.setRateLimitPerUser(args.interval, `${interaction.user.username} used /slowmode`)
+		const interval = interaction.options.getInteger("interval");
+		if (interval < 0 || interval > 21600) {
+			embed.setTitle("Invalid slowmode duration")
+				.setDescription("It must be between 0 and 21600 seconds, inclusive.");
+			return interaction.reply({ embeds: [embed] });
+		}
+
+		channel.setRateLimitPerUser(interval, `${interaction.user.username} used /slowmode`)
 			.then(textChannel => {
 				embed.setDescription(
-					`Slowmode for ${textChannel.toString()} successfully set to ${args.interval} ${args.interval === 1 ? "second" : "seconds"}.`
+					`Slowmode for ${textChannel.toString()} successfully set to ${interval.toString()} second${interval === 1 ? "" : "s"}.`
 				);
 				interaction.reply({ embeds: [embed] });
 			})
 			.catch(err => {
 				console.error(err);
 				embed.setTitle("An error occured");
-				embed.setDescription("Are you sure you selected a text channel?");
+				embed.setDescription("Did you enter an invalid slowmode duration? It must be between 0 and 21600 seconds, inclusive.");
 				interaction.reply({ embeds: [embed], ephemeral: true });
 			});
 	}

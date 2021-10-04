@@ -12,6 +12,7 @@ module.exports = {
 			required: false,
 		}],
 	}),
+	cooldown: 3,
 	execute(interaction, args) {
 		let user;
 		if (!args.user) user = interaction.member.user;

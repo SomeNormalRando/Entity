@@ -6,7 +6,8 @@ module.exports = {
 		name: "serverinfo",
 		description: "Get server info/stats."
 	}),
-	guildOnly: true,
+	cooldown: 5,
+	guildOnly: [true, "This isn't a server! Use this command in one instead."],
 	execute(interaction) {
 		interaction.deferReply();
 		this.guildInfo(interaction.guild).then(embed => interaction.editReply({ embeds: [embed] })).catch(err => {
@@ -21,17 +22,18 @@ module.exports = {
 
 		const text = {
 			server: [
-				`Owner: ${owner} (${owner.user.tag})`,
-				`Created: ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}`,
-				`Members: ${guild.memberCount}`
+				`**Owner:** ${owner} (${owner.user.tag})`,
+				`**Created:** ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}`,
+				`**Members:** ${guild.memberCount}`
 			],
 			channels: [
-				`Text: ${channels.filter(c => c.type === "GUILD_TEXT").size}`,
-				`Voice: ${channels.filter(c => c.type === "GUILD_VOICE").size}`
+				`**Categories:** ${channels.filter(c => c.type === "GUILD_CATEGORY").size}`,
+				`**Text:** ${channels.filter(c => c.type === "GUILD_TEXT").size}`,
+				`**Voice:** ${channels.filter(c => c.type === "GUILD_VOICE").size}`
 			],
 			moderation: [
-				`Verification Level: ${guild.verificationLevel.toTitleCase()}`,
-				`Explicit Content Filter: ${guild.explicitContentFilter.toTitleCase()}`
+				`**Verification Level:** ${guild.verificationLevel.toTitleCase()}`,
+				`**Explicit Content Filter:** ${guild.explicitContentFilter.toTitleCase()}`
 			]
 		};
 
@@ -47,10 +49,10 @@ module.exports = {
 			.setTitle(guild.name)
 			.setThumbnail(guild.iconURL({ dynamic: true }))
 			.addFields(
-				{ name: "Server", value: text.server.join("\n") },
-				{ name: "Channels", value: text.channels.join("\n"), inline: true },
-				{ name: "Moderation", value: text.moderation.join("\n") },
-				{ name: "Roles", value: `${roles.size} (${roles.filter(r => r.hoist).size} hoisted)`, inline: true },
+				{ name: "__Server__", value: text.server.join("\n") },
+				{ name: "__Channels__", value: text.channels.join("\n"), inline: true },
+				{ name: "__Moderation__", value: text.moderation.join("\n") },
+				{ name: "__Roles__", value: `${roles.size} (${roles.filter(r => r.hoist).size} hoisted)`, inline: true },
 			)
 			.setFooter(`ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
 			.setTimestamp();

@@ -4,11 +4,10 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const { client, env } = require("./index");
 
+client.commands = new Discord.Collection();
 client.cooldowns = new Discord.Collection();
 
 // Command handling
-client.commands = new Discord.Collection();
-
 const commandFolders = fs.readdirSync("./commands");
 for (const folder of commandFolders) {
 	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith(".js"));

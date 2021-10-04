@@ -7,11 +7,12 @@ module.exports = {
 		description: "Generates a change my mind meme",
 		options: [{
 			name: "text",
-			description: "The text for the meme text",
+			description: "The text to generate the meme with",
 			type: "STRING",
 			required: true,
 		}]
 	},
+	cooldown: 5,
 	async execute(interaction, args) {
 		await interaction.deferReply();
 

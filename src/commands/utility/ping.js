@@ -5,6 +5,7 @@ module.exports = {
 		name: "ping",
 		description: "Used to test if the bot is online",
 	}),
+	cooldown: 5,
 	async execute(interaction) {
 		await interaction.reply("Pong! Bot is online.");
 		let replyMsg;
