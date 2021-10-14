@@ -7,15 +7,11 @@ module.exports = {
 	}),
 	cooldown: 5,
 	async execute(interaction) {
-		await interaction.reply("Pong! Bot is online.");
-		let replyMsg;
-		await interaction.fetchReply()
-			// eslint-disable-next-line no-return-assign
-			.then(reply => replyMsg = reply);
+		const initialReply = await interaction.reply({ content: "Pong! Bot is online.", fetchReply: true });
 
-		const latency = `Latency is **${replyMsg.createdTimestamp - interaction.createdTimestamp} milliseconds**.`;
+		const latency = `Latency is **${initialReply.createdTimestamp - interaction.createdTimestamp} milliseconds**.`;
 		const apiLatency = `API latency is **${Math.round(interaction.client.ws.ping)} milliseconds**.`;
 
-		await interaction.editReply(`${replyMsg.content}\n${latency}\n${apiLatency}`);
+		await interaction.editReply(`${initialReply.content}\n${latency}\n${apiLatency}`);
 	}
 };

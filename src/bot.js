@@ -13,6 +13,7 @@ for (const folder of commandFolders) {
 	const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(file => file.endsWith(".js"));
 	for (const file of commandFiles) {
 		const command = require(`./commands/${folder}/${file}`);
+		// @ts-expect-error
 		command.data = Discord.ApplicationCommandManager.transformCommand(command.data);
 		client.commands.set(command.data.name, command);
 	}

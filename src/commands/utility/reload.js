@@ -16,13 +16,13 @@ module.exports = {
 			},
 			{
 				name: "reregister",
-				description: "Whether to reregister the command(s)",
+				description: "Whether to re-register the command(s)",
 				type: "BOOLEAN",
 				required: false
 			},
 			{
 				name: "global",
-				description: "Whether to reregister the command(s) globally or not (only works if reregister is true)",
+				description: "Whether to re-register the command(s) globally or not (only works if reregister is true)",
 				type: "BOOLEAN",
 				required: false
 			}

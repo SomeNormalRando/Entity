@@ -16,7 +16,7 @@
     "canvas": "^2.8.0",
     "discord-api-types": "^0.22.0",
     "discord-rpc": "^4.0.1",
-    "discord.js": "^13.2.0-dev.1633133131.fe95005",
+    "discord.js": "^13.3.0-dev.1633478700.adc850a",
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.1",
     "sequelize": "^6.6.5",

@@ -2,7 +2,7 @@
 const Discord = require("discord.js");
 const { config, Util } = require("../../index.js");
 
-const subreddits = { memes: 5, dankmemes: 3, me_irl: 1, AdviceAnimals: 1 };
+const subreddits = { memes: 5, dankmemes: 3, me_irl: 2, AdviceAnimals: 1 };
 const choices = [];
 
 for (const sub of Object.keys(subreddits)) {
@@ -11,7 +11,7 @@ for (const sub of Object.keys(subreddits)) {
 module.exports = {
 	data: {
 		name: "meme",
-		description: "Random memes from Reddit",
+		description: "Get random memes from Reddit!",
 		options: [
 			{
 				name: "subreddit",
@@ -31,14 +31,23 @@ module.exports = {
 			.setTitle(result.title)
 			.setURL(`https://reddit.com${result.permalink}`)
 			.setImage(result.url)
-			.setTimestamp()
-			.setFooter(`From ${result.subreddit_name_prefixed}`);
+			.setTimestamp(result.created * 1000)
+			.setFooter(`${result.ups} 👍 • ${result.num_comments} 💬 | From ${result.subreddit_name_prefixed} | Posted on`);
 		interaction.editReply({ embeds: [embed] });
 	}
 };
 async function getPost(subreddit = Util.fillArray(subreddits).random()) {
-	const result = await require("node-fetch")(`https://reddit.com/r/${subreddit}/random/.json`).then(response => response.json());
-	const data = result[0].data.children[0].data;
-	if (data.over_18 || data.is_video || !data.url || !data.permalink) return getPost(subreddit);
+	const result = await require("node-fetch")(`https://reddit.com/r/${subreddit}/random.json`).then(response => response.json());
+	let data;
+	for (let i = 0, l = result[0].data.children.length; i < l; i++) {
+		const temp = result[0].data.children[i].data;
+		if (temp.over_18 || temp.is_video || !temp.url || !temp.permalink) {
+			continue;
+		} else {
+			data = temp;
+			break;
+		}
+	}
+	data ??= getPost(subreddit);
 	return data;
 }

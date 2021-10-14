@@ -1,9 +1,14 @@
 /* eslint-disable max-len */
 /* eslint-disable no-extend-native */
 "use strict";
-
+const Discord = require("discord.js");
 const { ApplicationCommandManager, MessageActionRow } = require("discord.js");
+const config = require("../config.json");
 
+const evalFlags = {
+	"async": ["--run-async", "--async", "-a"],
+	"no-send": ["--no-send", "-ns", "-s"]
+};
 /**
  * Gets a random element from an array
  * @returns {*} The random element
@@ -16,13 +21,12 @@ Array.prototype.random = function random() {
  * Converts SNAKE_CASE to Title Case
  * @param {RegExp[]} exceptions Patterns to ignore when converting
  * @returns {String} The string in title case
+ * @memberof String
  */
 String.prototype.toTitleCase = function toTitleCase(...exceptions) {
+	const strArr = this.toLowerCase().replace(/_/g, " ").split(" ");
 	const result = [];
-	let str = this.toLowerCase();
-	str = str.replace(/_/g, " ");
-	str = str.split(" ");
-	for (const element of str) {
+	for (const element of strArr) {
 		const a = exceptions.some(e => e.test(element));
 		if (a) result.push(element.toUpperCase());
 		else result.push(element.charAt(0).toUpperCase() + element.substr(1));
@@ -144,43 +148,96 @@ module.exports = {
 	 */
 	editRows,
 
-	// This is mostly for Intellisense
-	/**
-	 * @typedef {Object[]} SlashCommandOptions
-	 * @property {String} name 1-32 character name of the option
-	 * @property {String} description 1-100 description of the option
-	 * @property {String|Number} type [Type of the option](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type)
-	 * @property {Boolean} [required=false] Whether the option is required or not (default `false`)
-	 * @property {Object[]} [choices] [Choices for `STRING`, `INTEGER`, and `NUMBER` types for the user to pick from, max 25](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-choice-structure)
-	 * @property {String} [choices.name] 1-100 character choice name
-	 * @property {String|Number} [choice.value] Value of the choice, up to 100 characters if string
-	 * @property {SlashCommandOptions} [options] If the option is a subcommand or subcommand group type, this nested options will be the parameters
-	 */
-	/**
-	 * Returns a slash command
-	 * @param {Object} data [Data for the slash command](https://discord.com/developers/docs/interactions/application-commands#application-command-object)
-	 * @param {String} data.name 1-32 character name of the slash command
-	 * @param {String} data.description 1-100 character description of the slash command
-	 * @param {SlashCommandOptions} [data.options] [Array of application command option(s)](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure)
-	 * @param {Boolean} [data.default_permission] Whether the command is enabled by default when the app is added to a guild
+	// eslint-disable-next-line no-unused-vars
+	discordEval(message, client) {
+		let evalArgs = message.content.split(" "), lang = "javascript", result;
+		evalArgs.shift();
 
-	 * @returns {Object} The slash command with option types changed to numbers
-	 * @example
-	 * const command = new SlashCommand({
-	 *     name: "say",
-	 *     description: "Make the bot say something of your choice",
-	 *     options: [
-	 *         {
-	 *            name: "content",
-	 *            description: "The content to make the bot say",
-	 *            type: "STRING",
-	 *            required: true
-	 *         }
-	 *     ],
-	 * })
-	 */
+		// Flags
+		let async = true, sendEmbed = true;
+		for (let i = 0, l = Object.keys(evalFlags).length; i < l; i++) {
+			if (evalFlags.async.includes(evalArgs[i]) && !async) {
+				evalArgs.shift();
+				evalArgs = `(async function() {\n${evalArgs.join(" ")}\n})().then(r => r)`.split(" ");
+				async = true;
+			} else if (evalFlags["no-send"].includes(evalArgs[i]) && sendEmbed) {
+				evalArgs.shift();
+				sendEmbed = false;
+			}
+		}
+		evalArgs = evalArgs.join(" ");
+
+		try {
+			// eslint-disable-next-line no-eval
+			result = eval(evalArgs);
+		} catch (error) {
+			return message.reply(Discord.Formatters.codeBlock(error.toString())).catch(err => console.error(err));
+		}
+		if (sendEmbed === false) return;
+
+		const resultStr = typeof result === "object" ? JSON.stringify(result, null, 4) : `${result}`;
+		if (typeof result === "object") lang = "json";
+
+		const resultArr = resultStr ? Discord.Util.splitMessage(resultStr, { maxLength: 4086 }) : ["NO OUTPUT"];
+		const inputEmbed = new Discord.MessageEmbed()
+			.setTitle("Input")
+			.setColor(config.embedColour)
+			.setDescription(Discord.Formatters.codeBlock(lang, evalArgs))
+			.addField("Output Type", Array.isArray(result) ? "array" : typeof result);
+		const first = new Discord.MessageEmbed()
+			.setTitle("Output")
+			.setColor(config.embedColour)
+			.setDescription(Discord.Formatters.codeBlock(lang, resultStr));
+
+		message.reply({ embeds: [inputEmbed, first] })
+			.catch(err => message.reply(Discord.Formatters.codeBlock(err.toString())));
+
+		resultArr.shift();
+		for (const element of resultArr) {
+			message.reply({ embeds: [
+				new Discord.MessageEmbed()
+					.setColor(config.embedColour)
+					.setDescription(Discord.Formatters.codeBlock(lang, element))
+			] }).catch(err => message.reply(Discord.Formatters.codeBlock(err.toString())));
+		}
+	},
+
 	SlashCommand: class SlashCommand {
+		/**
+		 * @typedef {Object[]} SlashCommandOptions
+		 * @property {String} name 1-32 character name of the option
+		 * @property {String} description 1-100 description of the option
+		 * @property {String|Number} type [Type of the option](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type)
+		 * @property {Boolean} [required=false] Whether the option is required or not (default `false`)
+		 * @property {Object[]} [choices] [Choices for `STRING`, `INTEGER`, and `NUMBER` types for the user to pick from, max 25](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-choice-structure)
+		 * @property {String} [choices.name] 1-100 character choice name
+		 * @property {String|Number} [choice.value] Value of the choice, up to 100 characters if string
+		 * @property {SlashCommandOptions} [options] If the option is a subcommand or subcommand group type, this nested options will be the parameters
+		 */
+
+		/**
+		 * Transforms a slash command into one that the Discord API accepts
+		 * @param {Object} data [Data for the slash command](https://discord.com/developers/docs/interactions/application-commands#application-command-object)
+		 * @param {String} data.name 1-32 character name of the slash command
+		 * @param {String} data.description 1-100 character description of the slash command
+		 * @param {SlashCommandOptions} [data.options] [Array of application command option(s)](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure)
+		 * @param {Boolean} [data.default_permission] Whether the command is enabled by default when the app is added to a guild
+		 * @example
+		 * const command = new SlashCommand({
+		 *     name: "say",
+		 *     description: "Say something with the bot!",
+		 *     options: [
+		 *         {
+		 *            name: "content",
+		 *            description: "The content to make the bot say",
+		 *            type: "STRING", // Can also be a integer
+		 *            required: true
+		 *         }
+		 *     ],
+		 * })
+		 */
 		constructor(data) {
+			// @ts-expect-error
 			// eslint-disable-next-line no-constructor-return
 			return ApplicationCommandManager.transformCommand(data);
 		}

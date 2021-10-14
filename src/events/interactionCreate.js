@@ -3,6 +3,10 @@ const Discord = require("discord.js");
 module.exports = {
 	name: "interactionCreate",
 	once: false,
+	/**
+	 * @param {Discord.Interaction} interaction
+	 * @param {Discord.Client} client
+	 */
 	async execute(interaction, client) {
 		// Slash commands
 		if (interaction.isCommand()) {
@@ -17,6 +21,7 @@ module.exports = {
 
 			// User permissions
 			if (command.userPerms) {
+				// @ts-expect-error
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
 				const missingPerms = [];
 				for (const element of command.userPerms) {
@@ -36,31 +41,32 @@ module.exports = {
 			if (!cooldowns.has(commandName)) {
 				cooldowns.set(commandName, new Discord.Collection());
 			}
-
+			const userId = interaction.member.user.id;
 			const now = Date.now();
 			const timestamps = cooldowns.get(commandName);
 			const cooldownAmount = (command.cooldown || 1) * 1000;
 
-			if (timestamps.has(interaction.member.id)) {
-				const expirationTime = timestamps.get(interaction.member.id) + cooldownAmount;
+			if (timestamps.has(userId)) {
+				const expirationTime = timestamps.get(userId) + cooldownAmount;
 
 				if (now < expirationTime) {
-					const timeLeft = ((expirationTime - now) / 1000).toFixed(1);
+					const timeLeft = (expirationTime - now) / 1000;
 					return interaction.reply({
 						// eslint-disable-next-line max-len
-						content: `Please wait ${timeLeft} more second${timeLeft === 1 ? "" : "s"} before reusing the command \`${commandName}\`.`,
+						content: `Please wait ${timeLeft.toFixed(1)} more second${timeLeft === 1 ? "" : "s"} before reusing the command \`${commandName}\`.`,
 						ephemeral: true
 					});
 				}
 			}
-			timestamps.set(interaction.member.id, now);
-			setTimeout(() => timestamps.delete(interaction.member.id), cooldownAmount);
+			timestamps.set(userId, now);
+			setTimeout(() => timestamps.delete(userId), cooldownAmount);
 
 			// Args
 			const args = {};
 			if (command.data.options) {
 				for (const element of command.data.options) {
 					const { type } = element;
+					/** @type {*} */
 					let optionVal = interaction.options.get(element.name)?.value;
 					if (!optionVal) continue;
 					if (type === 6) {
@@ -83,9 +89,9 @@ module.exports = {
 				await command.execute(interaction, args);
 			} catch (error) {
 				console.error(error);
-				await interaction.reply({ content: "An error occured while executing this command.", ephemeral: true }).catch(err => {
+				await interaction.reply({ content: "An error occurred while executing this command.", ephemeral: true }).catch(err => {
 					if (err.message !== "INTERACTION_ALREADY_REPLIED") console.error(err);
-					interaction.followUp({ content: "An error occured while executing this command.", ephemeral: true });
+					interaction.followUp({ content: "An error occurred while executing this command.", ephemeral: true });
 				});
 			}
 
@@ -102,12 +108,12 @@ module.exports = {
 				await command.execute(interaction, arg);
 			} catch (error) {
 				console.error(error);
-				await interaction.reply({ content: "An error occured while executing this command.", ephemeral: true }).catch(err => {
+				await interaction.reply({ content: "An error occurred while executing this command.", ephemeral: true }).catch(err => {
 					console.error(err);
-					interaction.followUp({ content: "An error occured while executing this command.", ephemeral: true })
+					interaction.followUp({ content: "An error occurred while executing this command.", ephemeral: true })
 						.catch(err => console.error(err));
 				});
 			}
 		}
-	},
+	}
 };

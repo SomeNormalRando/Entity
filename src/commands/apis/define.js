@@ -88,7 +88,7 @@ module.exports = {
 			}, time);
 		}).catch(err => {
 			console.error(err);
-			interaction.editReply("An error occured.");
+			interaction.editReply("An error occurred.");
 		});
 	}
 };

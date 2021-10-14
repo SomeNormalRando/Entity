@@ -1,5 +1,4 @@
 "use strict";
-
 const { Util: { SlashCommand } } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
@@ -21,6 +20,11 @@ module.exports = {
 
 		interaction.reply({ embeds: [embed] });
 	},
+	/**
+	 * Creates an embed with the avatar of a user
+	 * @param {Discord.User} user The user to show the avatar
+	 * @returns {Discord.MessageEmbed} The embed
+	 */
 	avatar(user) {
 		const Discord = require("discord.js");
 		return new Discord.MessageEmbed()

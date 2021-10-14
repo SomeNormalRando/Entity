@@ -18,8 +18,14 @@ module.exports = {
 		console.log("██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █ \n");
 
 		console.log(`Logged in as ${client.user.tag}.`);
-	},
+	}
 };
+/**
+ * Registers commands to the Discord API
+ * @param {import("discord.js").Client} client The client to register commands for
+ * @param {Boolean} [global=false] Whether to register the commands globally
+ * @param {Boolean} [clear=false] Whether to overwrite the commands with an empty array
+ */
 function reloadCommands(client, global, clear) {
 	const commands = [];
 	const registerType = global === true ? "global" : "guild";
@@ -56,7 +62,7 @@ function reloadCommands(client, global, clear) {
 				);
 			}
 		}
-		console.log(`Succesfully reloaded ${registerType} commands.\n`);
+		console.log(`Successfully reloaded ${registerType} commands.\n`);
 	} catch (error) {
 		console.error(error);
 	}

@@ -25,7 +25,7 @@ module.exports = {
 				.setFooter(`Powered by ${url}`);
 			interaction.reply({ embeds: [catEmbed] });
 		} else {
-			interaction.reply({ content: "An error occured while fetching your cat.", ephemeral: true });
+			interaction.reply({ content: "An error occurred while fetching your cat.", ephemeral: true });
 		}
 	},
 };
