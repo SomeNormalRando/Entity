@@ -1,5 +1,6 @@
 "use strict";
 const Discord = require("discord.js");
+const { config: { EMBED_COLOUR } } = require("../../index");
 const emojiNumbers = {
 	1: "1️⃣",
 	2: "2️⃣",
@@ -107,14 +108,14 @@ module.exports = {
 		const title = interaction.options.getString("title");
 		const embed = new Discord.MessageEmbed()
 			.setTitle(title)
-			.setColor("#2F3136")
+			.setColor(EMBED_COLOUR)
 			.setFooter(`Poll by ${interaction.user.tag}`);
+
 		if (args.subcommand === "yesno") {
-			await interaction.reply({ embeds: [embed] })
-				.then(async () => {
-					const sentMsg = await interaction.fetchReply();
-					await sentMsg.react("👍");
-					await sentMsg.react("👎");
+			await interaction.reply({ embeds: [embed], fetchReply: true })
+				.then(async msg => {
+					await msg.react("👍");
+					await msg.react("👎");
 				}).catch(err => console.error(err));
 		} else if (args.subcommand === "multiplechoice") {
 			let description = "";
@@ -128,12 +129,12 @@ module.exports = {
 				}
 			}
 			embed.setDescription(description);
-			await interaction.reply({ embeds: [embed] })
-				.then(async () => {
-					const sentMsg = await interaction.fetchReply();
-					emojisToReact.forEach(async element => {
-						await sentMsg.react(element);
-					});
+			await interaction.reply({ embeds: [embed], fetchReply: true })
+				.then(async msg => {
+					for (const emoji of emojisToReact) {
+						// eslint-disable-next-line no-await-in-loop
+						await msg.react(emoji);
+					}
 				}).catch(err => console.error(err));
 		}
 	}

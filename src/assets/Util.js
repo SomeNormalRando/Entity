@@ -1,39 +1,43 @@
-/* eslint-disable max-len */
-/* eslint-disable no-extend-native */
 "use strict";
-const Discord = require("discord.js");
-const { ApplicationCommandManager, MessageActionRow } = require("discord.js");
+// eslint-disable-next-line id-length
+const { ApplicationCommandManager, MessageActionRow, MessageEmbed } = require("discord.js");
+const fetch = require("node-fetch");
 const config = require("../config.json");
 
-const evalFlags = {
-	"async": ["--run-async", "--async", "-a"],
-	"no-send": ["--no-send", "-ns", "-s"]
-};
-/**
- * Gets a random element from an array
- * @returns {*} The random element
- */
+const errEmojis = ["😮", "☹", "😦", "🙁"];
+const errSep = "".padStart(process.stdout.columns, "─");
+
+// eslint-disable-next-line no-extend-native
 Array.prototype.random = function random() {
 	return this[Math.floor(Math.random() * this.length)];
 };
 
-/**
- * Converts SNAKE_CASE to Title Case
- * @param {RegExp[]} exceptions Patterns to ignore when converting
- * @returns {String} The string in title case
- * @memberof String
- */
-String.prototype.toTitleCase = function toTitleCase(...exceptions) {
-	const strArr = this.toLowerCase().replace(/_/g, " ").split(" ");
-	const result = [];
-	for (const element of strArr) {
-		const a = exceptions.some(e => e.test(element));
-		if (a) result.push(element.toUpperCase());
-		else result.push(element.charAt(0).toUpperCase() + element.substr(1));
-	}
-	return result.join(" ");
-};
 module.exports = {
+	errSep,
+	fetchResource(url) {
+		return new Promise((resolve, reject) => {
+			fetch(url)
+				.then(response => {
+					if (response.ok) resolve(response.json());
+					else throw new Error(`Error while fetching from \`${url}\`, HTTP status code ${response.status}`);
+				})
+				.catch(err => {
+					console.error(`${errSep}\n\x1b[1;91mError at \`fetchResource\`:\x1b[0m`, err, `\n${errSep}`);
+					reject(err);
+				});
+		});
+	},
+	// #region String & array manipulation
+	toTitleCase(str, ...exceptions) {
+		const strArr = str.toLowerCase().replace(/_/g, " ").split(" ");
+		const result = [];
+		for (const element of strArr) {
+			const matches = exceptions.some(e => e.test(element));
+			if (matches) result.push(element.toUpperCase());
+			else result.push(element.charAt(0).toUpperCase() + element.substr(1));
+		}
+		return result.join(" ");
+	},
 	/**
 	 * Trims a string to the specified length if it exceeds it, and removes whitespace from both ends of a string
 	 * @param {String} str String to trim
@@ -44,11 +48,28 @@ module.exports = {
 	 * trim("ABCDEFG", 4) // returns "ABCD"
 	 * trim("ABCDEFG", 4, "z"); // returns "ABCz"
 	 */
-	trimStr(str, max, extraText) {
+	trimStr(str, max, extraText = "") {
 		str = str.trim();
-		return str.length > max ? `${str.slice(0, max - (extraText.length ?? 0))}${extraText ?? ""}` : str;
+		return str.length < max ? str : `${str.slice(0, max - extraText.length)}${extraText}`;
 	},
+	/**
+	 * Trims an array to the specified length and adds text to the end of the string
+	 * @param {any[]} arr Array to trim
+	 * @param {Number} max The maximum length
+	 * @param {String} [sep=", "] The separator
+	 * @returns {String} The joined array after trimming and adding text
+	 */
+	trimArr(arr, max, sep = ", ") {
+		const joined = arr.join(sep);
+		if (joined.length <= max) return joined;
 
+		const newArr = [...arr];
+		while (newArr.join(sep).length + `...${arr.length - newArr.length} more`.length > max) {
+			newArr.pop();
+		}
+		const result = newArr.join(sep);
+		return `${result} ...${arr.length - newArr.length} more`;
+	},
 	/**
 	 * Fills an array from an object's keys n times, where n is the value of the key
 	 * @param {Object} obj Object to generate the array from
@@ -67,28 +88,8 @@ module.exports = {
 		}
 		return result;
 	},
-
-	/**
-	 * Removes Discord-flavoured markdown from a string
-	 * @param {String} str String to remove markdown from
-	 * @returns {String} The string with markdown removed
-	 */
-	removeMarkdown(str) {
-		const regexes = [
-			/\*\*(.+?)\*\*/g,
-			/\*(.+?)\*/g,
-			/__(.+?)__/g,
-			/_(.+?)_/g,
-			/\|\|(.+?)\|\|/g,
-			/```([\w\W]+?)```/g,
-			/`(.+?)`/g,
-		];
-		let result = str;
-		for (const regex of regexes) {
-			result = result.replace(regex, "$1");
-		}
-		return str;
-	},
+	// #endregion
+	// #region Buttons
 
 	/**
 	 * Changes the style of the button(s) with the specified id in the specified MessageActionRow(s)
@@ -147,60 +148,10 @@ module.exports = {
 	 * @returns {Discord.MessageActionRow[]} An array of new MessageActionRow(s)
 	 */
 	editRows,
+	// #endregion
 
-	// eslint-disable-next-line no-unused-vars
-	discordEval(message, client) {
-		let evalArgs = message.content.split(" "), lang = "javascript", result;
-		evalArgs.shift();
-
-		// Flags
-		let async = true, sendEmbed = true;
-		for (let i = 0, l = Object.keys(evalFlags).length; i < l; i++) {
-			if (evalFlags.async.includes(evalArgs[i]) && !async) {
-				evalArgs.shift();
-				evalArgs = `(async function() {\n${evalArgs.join(" ")}\n})().then(r => r)`.split(" ");
-				async = true;
-			} else if (evalFlags["no-send"].includes(evalArgs[i]) && sendEmbed) {
-				evalArgs.shift();
-				sendEmbed = false;
-			}
-		}
-		evalArgs = evalArgs.join(" ");
-
-		try {
-			// eslint-disable-next-line no-eval
-			result = eval(evalArgs);
-		} catch (error) {
-			return message.reply(Discord.Formatters.codeBlock(error.toString())).catch(err => console.error(err));
-		}
-		if (sendEmbed === false) return;
-
-		const resultStr = typeof result === "object" ? JSON.stringify(result, null, 4) : `${result}`;
-		if (typeof result === "object") lang = "json";
-
-		const resultArr = resultStr ? Discord.Util.splitMessage(resultStr, { maxLength: 4086 }) : ["NO OUTPUT"];
-		const inputEmbed = new Discord.MessageEmbed()
-			.setTitle("Input")
-			.setColor(config.embedColour)
-			.setDescription(Discord.Formatters.codeBlock(lang, evalArgs))
-			.addField("Output Type", Array.isArray(result) ? "array" : typeof result);
-		const first = new Discord.MessageEmbed()
-			.setTitle("Output")
-			.setColor(config.embedColour)
-			.setDescription(Discord.Formatters.codeBlock(lang, resultStr));
-
-		message.reply({ embeds: [inputEmbed, first] })
-			.catch(err => message.reply(Discord.Formatters.codeBlock(err.toString())));
-
-		resultArr.shift();
-		for (const element of resultArr) {
-			message.reply({ embeds: [
-				new Discord.MessageEmbed()
-					.setColor(config.embedColour)
-					.setDescription(Discord.Formatters.codeBlock(lang, element))
-			] }).catch(err => message.reply(Discord.Formatters.codeBlock(err.toString())));
-		}
-	},
+	createErrorEmbed,
+	discordEval: require("./eval.js"),
 
 	SlashCommand: class SlashCommand {
 		/**
@@ -225,24 +176,41 @@ module.exports = {
 		 * @example
 		 * const command = new SlashCommand({
 		 *     name: "say",
-		 *     description: "Say something with the bot!",
+		 *     description: "Make the bot say something!",
 		 *     options: [
 		 *         {
 		 *            name: "content",
-		 *            description: "The content to make the bot say",
-		 *            type: "STRING", // Can also be a integer
+		 *            description: "Text to make the bot say",
+		 *            type: "STRING", // Can also be an integer
 		 *            required: true
 		 *         }
 		 *     ],
 		 * })
 		 */
 		constructor(data) {
-			// @ts-expect-error
 			// eslint-disable-next-line no-constructor-return
 			return ApplicationCommandManager.transformCommand(data);
 		}
-	}
+	},
+
+	// #region idk
+	testCol(hex, customString = "None") {
+		if (hex === "#000000") return customString;
+		return hex;
+	},
+	toYesNo(bool) {
+		if (bool === true) return "Yes";
+		else if (bool === false) return "No";
+		throw new TypeError("Parameter is not a boolean");
+	},
+	// #endregion
 };
+function createErrorEmbed(text = "", description = "") {
+	return new MessageEmbed()
+		.setTitle(`An error occurred ${text}${text ? " " : ""}${errEmojis.random()}`)
+		.setColor(config.EMBED_COLOUR)
+		.setDescription(description || "If this keeps happening, try contacting my developer.");
+}
 function editRows(rows, fn) {
 	const newRows = [];
 	for (const row of rows) {

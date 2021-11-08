@@ -1,7 +1,7 @@
 "use strict";
-const Discord = require("discord.js");
-const { config, Util } = require("../../index.js");
-
+const { MessageEmbed } = require("discord.js");
+const { config: { EMBED_COLOUR }, Util: { fillArray, fetchResource } } = require("../../index.js");
+// eslint-disable-next-line camelcase
 const subreddits = { memes: 5, dankmemes: 3, me_irl: 2, AdviceAnimals: 1 };
 const choices = [];
 
@@ -26,8 +26,8 @@ module.exports = {
 		await interaction.deferReply();
 		const result = await getPost(args.subreddit);
 
-		const embed = new Discord.MessageEmbed()
-			.setColor(config.embedColour)
+		const embed = new MessageEmbed()
+			.setColor(EMBED_COLOUR)
 			.setTitle(result.title)
 			.setURL(`https://reddit.com${result.permalink}`)
 			.setImage(result.url)
@@ -36,10 +36,11 @@ module.exports = {
 		interaction.editReply({ embeds: [embed] });
 	}
 };
-async function getPost(subreddit = Util.fillArray(subreddits).random()) {
-	const result = await require("node-fetch")(`https://reddit.com/r/${subreddit}/random.json`).then(response => response.json());
+async function getPost(subreddit = fillArray(subreddits).random()) {
+	const result = await fetchResource(`https://reddit.com/r/${subreddit}/random.json`);
+
 	let data;
-	for (let i = 0, l = result[0].data.children.length; i < l; i++) {
+	for (let i = 0, len = result[0].data.children.length; i < len; i++) {
 		const temp = result[0].data.children[i].data;
 		if (temp.over_18 || temp.is_video || !temp.url || !temp.permalink) {
 			continue;

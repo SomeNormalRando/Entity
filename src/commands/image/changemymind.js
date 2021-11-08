@@ -1,5 +1,5 @@
 "use strict";
-const Discord = require("discord.js");
+const { MessageAttachment } = require("discord.js");
 const Canvas = require("canvas");
 module.exports = {
 	data: {
@@ -26,9 +26,8 @@ module.exports = {
 		context.fillStyle = "#000000";
 		context.fillText(args.text, canvas.width / 2, 720);
 
-		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), "changemymind.png");
+		const attachment = new MessageAttachment(canvas.toBuffer(), "changemymind.png");
 		await interaction.editReply({ files: [attachment] });
-
 	},
 };
 function applyText(canvas, text) {

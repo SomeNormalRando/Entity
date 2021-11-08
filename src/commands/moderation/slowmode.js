@@ -1,6 +1,7 @@
 "use strict";
 const Discord = require("discord.js");
-const { Util: { SlashCommand }, config } = require("../../index");
+const { Util: { SlashCommand }, config: { EMBED_COLOUR } } = require("../../index");
+const MAX_SLOWMODE_DURATION = 21600;
 module.exports = {
 	data: new SlashCommand({
 		name: "slowmode",
@@ -27,7 +28,7 @@ module.exports = {
 	execute(interaction, args) {
 		const channel = args.channel || interaction.channel;
 
-		const embed = new Discord.MessageEmbed().setColor(config.embedColour);
+		const embed = new Discord.MessageEmbed().setColor(EMBED_COLOUR);
 
 		// User permission check
 		if (!channel.permissionsFor(interaction.member).has("MANAGE_CHANNELS")) {
@@ -43,7 +44,7 @@ module.exports = {
 		}
 
 		const interval = interaction.options.getInteger("interval");
-		if (interval < 0 || interval > 21600) {
+		if (interval < 0 || interval > MAX_SLOWMODE_DURATION) {
 			embed.setTitle("Invalid slowmode duration")
 				.setDescription("It must be between 0 and 21600 seconds, inclusive.");
 			return interaction.reply({ embeds: [embed] });
@@ -58,7 +59,7 @@ module.exports = {
 			})
 			.catch(err => {
 				console.error(err);
-				embed.setTitle("An error occured");
+				embed.setTitle("An error occurred");
 				embed.setDescription("Did you enter an invalid slowmode duration? It must be between 0 and 21600 seconds, inclusive.");
 				interaction.reply({ embeds: [embed], ephemeral: true });
 			});

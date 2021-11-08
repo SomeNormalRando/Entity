@@ -1,12 +1,9 @@
 "use strict";
-const Discord = require("discord.js");
+const { Collection, Formatters, MessageEmbed } = require("discord.js");
+const { Util: { errSep }, Util: { createErrorEmbed, toTitleCase } } = require("../index");
 module.exports = {
 	name: "interactionCreate",
 	once: false,
-	/**
-	 * @param {Discord.Interaction} interaction
-	 * @param {Discord.Client} client
-	 */
 	async execute(interaction, client) {
 		// Slash commands
 		if (interaction.isCommand()) {
@@ -21,27 +18,25 @@ module.exports = {
 
 			// User permissions
 			if (command.userPerms) {
-				// @ts-expect-error
 				const userPerms = interaction.channel.permissionsFor(interaction.member);
-				const missingPerms = [];
-				for (const element of command.userPerms) {
-					if (!userPerms.has(command.userPerms)) {
-						missingPerms.push(Discord.Formatters.inlineCode(element.toTitleCase(/VAD/i, /TTS/i)));
-					}
-				}
+				const missingPerms = [...command.userPerms]
+					.filter(e => !userPerms.has(e))
+					.map(e => Formatters.inlineCode(toTitleCase(e, /VAD/i, /TTS/i)));
+
 				if (missingPerms.length) {
-					return interaction.reply({
-						content: `You still need the permission(s) ${missingPerms.join(" ")} to use this command.`,
-					});
+					const embed = new MessageEmbed()
+						.setTitle("You don't have enough permissions!")
+						.setDescription(`You still need the permission(s) ${missingPerms.join(" ")} to use this command.`);
+					return interaction.reply({ embeds: [embed] });
 				}
 			}
 
 			// Cooldowns
 			const { cooldowns } = client;
 			if (!cooldowns.has(commandName)) {
-				cooldowns.set(commandName, new Discord.Collection());
+				cooldowns.set(commandName, new Collection());
 			}
-			const userId = interaction.member.user.id;
+			const userId = interaction.member.id;
 			const now = Date.now();
 			const timestamps = cooldowns.get(commandName);
 			const cooldownAmount = (command.cooldown || 1) * 1000;
@@ -62,23 +57,20 @@ module.exports = {
 			setTimeout(() => timestamps.delete(userId), cooldownAmount);
 
 			// Args
-			const args = {};
+			const args = { };
 			if (command.data.options) {
 				for (const element of command.data.options) {
 					const { type } = element;
-					/** @type {*} */
-					let optionVal = interaction.options.get(element.name)?.value;
-					if (!optionVal) continue;
-					if (type === 6) {
-						optionVal = interaction.options.getMember(element.name);
-					} else if (type === 7) {
-						optionVal = interaction.options.getChannel(element.name);
-					} else if (type === 8) {
-						optionVal = interaction.options.getRole(element.name);
-					} else if (type === 9) {
-						optionVal = interaction.options.getMentionable(element.name);
-					}
-					args[element.name] = optionVal;
+					let val = interaction.options.get(element.name)?.value;
+					/* This works because `null == undefined`
+						but `null != false`, `null != 0`, `null != ""` */
+					if (val == null) continue;
+					else if (type === 6) val = interaction.options.getMember(element.name);
+					else if (type === 7) val = interaction.options.getChannel(element.name);
+					else if (type === 8) val = interaction.options.getRole(element.name);
+					else if (type === 9) val = interaction.options.getMentionable(element.name);
+
+					args[element.name] = val;
 				}
 				args.subcommand = interaction.options.getSubcommand(false);
 				args.subcommandGroup = interaction.options.getSubcommandGroup(false);
@@ -87,32 +79,32 @@ module.exports = {
 			// Executing and error handling
 			try {
 				await command.execute(interaction, args);
-			} catch (error) {
-				console.error(error);
-				await interaction.reply({ content: "An error occurred while executing this command.", ephemeral: true }).catch(err => {
-					if (err.message !== "INTERACTION_ALREADY_REPLIED") console.error(err);
-					interaction.followUp({ content: "An error occurred while executing this command.", ephemeral: true });
-				});
+			} catch (err) {
+				console.error(`${errSep}\n\x1b[91mError at command \`${commandName}\`:\x1b[0m`, err, `\n${errSep}`);
+
+				const reply = { embeds: [createErrorEmbed()], ephemeral: true };
+				if (interaction.replied || interaction.deferred) interaction.followUp(reply);
+				else interaction.reply(reply);
 			}
 
 		// Context menus
 		} else if (interaction.isContextMenu()) {
-
 			if (!client.commands.has(interaction.commandName)) return;
 
 			const command = await client.commands.get(interaction.commandName);
 
-			const arg = interaction.targetType === "USER" ? interaction.options.getMember("user") : interaction.options.getMessage("message");
+			const arg = interaction.targetType === "USER"
+				? interaction.options.getMember("user")
+				: interaction.options.getMessage("message");
 
 			try {
 				await command.execute(interaction, arg);
-			} catch (error) {
-				console.error(error);
-				await interaction.reply({ content: "An error occurred while executing this command.", ephemeral: true }).catch(err => {
-					console.error(err);
-					interaction.followUp({ content: "An error occurred while executing this command.", ephemeral: true })
-						.catch(err => console.error(err));
-				});
+			} catch (err) {
+				console.error(`${errSep}\n\x1b[91mError at context menu \`${interaction.commandName}\`:\x1b[0m`, err, `\n${errSep}`);
+
+				const reply = { embeds: [createErrorEmbed()], ephemeral: true };
+				if (interaction.replied || interaction.deferred) interaction.followUp(reply);
+				else interaction.reply(reply);
 			}
 		}
 	}

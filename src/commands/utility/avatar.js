@@ -1,5 +1,6 @@
 "use strict";
-const { Util: { SlashCommand } } = require("../../index");
+const Discord = require("discord.js");
+const { Util: { SlashCommand }, config: { EMBED_COLOUR } } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
 		name: "avatar",
@@ -13,9 +14,7 @@ module.exports = {
 	}),
 	cooldown: 3,
 	execute(interaction, args) {
-		let user;
-		if (!args.user) user = interaction.member.user;
-		else user = args.user.user;
+		const { user } = args.user ? args.user : interaction.member;
 		const embed = this.avatar(user);
 
 		interaction.reply({ embeds: [embed] });
@@ -26,11 +25,10 @@ module.exports = {
 	 * @returns {Discord.MessageEmbed} The embed
 	 */
 	avatar(user) {
-		const Discord = require("discord.js");
 		return new Discord.MessageEmbed()
-			.setColor("#2F3136")
+			.setColor(EMBED_COLOUR)
 			.setAuthor(user.tag, user.displayAvatarURL({ format: "png", dynamic: true }))
 			.setTitle("Avatar")
-			.setImage(`${user.displayAvatarURL({ format: "png", dynamic: true })}?size=1024`);
+			.setImage(`${user.displayAvatarURL({ format: "png", dynamic: true, size: 1024 })}`);
 	}
 };

@@ -1,22 +1,21 @@
 "use strict";
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
-const { config, Util: { SlashCommand, trimStr, disableButtons } } = require("../../index.js");
+const { config: { EMBED_COLOUR, EMBED_LIMITS }, Util: { SlashCommand, disableButtons, trimStr, createErrorEmbed } } = require("../../index.js");
 
 const logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/UD_logo-01.svg/1920px-UD_logo-01.svg.png";
-const id_last = "define_last";
-const id_next = "define_next";
+const idLast = "define_last";
+const idNext = "define_next";
 const templateRow = new Discord.MessageActionRow().addComponents(
 	new Discord.MessageButton()
-		.setCustomId(id_last)
+		.setCustomId(idLast)
 		.setLabel("◀")
 		.setStyle("PRIMARY"),
 	new Discord.MessageButton()
-		.setCustomId(id_next)
+		.setCustomId(idNext)
 		.setLabel("▶")
 		.setStyle("PRIMARY")
 );
-Object.freeze(templateRow);
 const time = 60000;
 module.exports = {
 	data: new SlashCommand({
@@ -31,17 +30,23 @@ module.exports = {
 	}),
 	cooldown: 7,
 	async execute(interaction, args) {
-		const term = args.term;
+		const { term } = args;
 		await interaction.deferReply();
-
+		let successful = true;
 		const query = encodeURIComponent(term);
 		const { list } = await fetch(`https://api.urbandictionary.com/v0/define?term=${query}`)
 			.then(response => response.json())
-			.catch(error => console.error(error));
+			.catch(error => {
+				console.error(error);
+				successful = false;
+			});
+		if (successful === false) {
+			return interaction.editReply({ embeds: [createErrorEmbed()], ephemeral: true });
+		}
 
 		if (!list || !list.length) {
 			const embed = new Discord.MessageEmbed()
-				.setColor(config.embedColour)
+				.setColor(EMBED_COLOUR)
 				.addField(
 					`No results found for "${term}"`,
 					`[Try searching for it](https://www.urbandictionary.com/define.php?term=${query})`
@@ -54,30 +59,30 @@ module.exports = {
 		let currentPage = 0;
 		const firstEmbed = genEmbed(list, currentPage);
 
-		let [firstRow] = disableButtons(id_last, new Discord.MessageActionRow(templateRow));
+		let [firstRow] = disableButtons(idLast, new Discord.MessageActionRow(templateRow));
 
-		if (list.length <= 1) [firstRow] = disableButtons(id_next, firstRow);
+		if (list.length <= 1) [firstRow] = disableButtons(idNext, firstRow);
 
 		interaction.editReply({ embeds: [firstEmbed], components: [firstRow] }).then(message => {
-			let embed;
+			let embed = firstEmbed;
 			const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
 			collector.on("collect", i => {
 				if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
 				i.deferUpdate();
-				if (i.customId === id_last) {
-					if (currentPage < 0) return interaction.followUp("An error occured.");
+				if (i.customId === idLast) {
+					if (currentPage < 0) return interaction.followUp("An error occurred.");
 
 					embed = genEmbed(list, currentPage -= 1);
 					let [row] = [new Discord.MessageActionRow(templateRow)];
-					if (currentPage === 0) [row] = disableButtons(id_last, row);
+					if (currentPage === 0) [row] = disableButtons(idLast, row);
 
 					interaction.editReply({ embeds: [embed], components: [row] });
-				} else if (i.customId === id_next) {
-					if (currentPage > list.length) return interaction.followUp("An error occured.");
+				} else if (i.customId === idNext) {
+					if (currentPage > list.length) return interaction.followUp("An error occurred.");
 
 					embed = genEmbed(list, currentPage += 1);
 					let [row] = [new Discord.MessageActionRow(templateRow)];
-					if (currentPage === list.length - 1) [row] = disableButtons(id_next, row);
+					if (currentPage === list.length - 1) [row] = disableButtons(idNext, row);
 
 					interaction.editReply({ embeds: [embed], components: [row] });
 				}
@@ -94,21 +99,23 @@ module.exports = {
 };
 const regex = /\[(.+?)\]/g;
 const replaceVal = "$1";
-function genEmbed(list, currentPage) {
-	const definition = list[currentPage];
-	const linkStr = `[...](${definition.permalink})`;
+function genEmbed(list, pageNum) {
+	const currentPg = list[pageNum], linkStr = `[...](${currentPg.permalink})`;
+
+	const definition = trimStr(currentPg.definition, EMBED_LIMITS.FIELD_VALUE, linkStr).replace(regex, replaceVal);
+	const example = trimStr(currentPg.example, EMBED_LIMITS.FIELD_VALUE, linkStr).replace(regex, replaceVal);
 
 	const newEmbed = new Discord.MessageEmbed()
-		.setTitle(trimStr(definition.word, 256, "..."))
-		.setURL(definition.permalink)
+		.setTitle(trimStr(currentPg.word, EMBED_LIMITS.TITLE, "..."))
+		.setURL(currentPg.permalink)
 		.addFields(
-			{ name: "Definition", value: trimStr(definition.definition, 1024, linkStr).replace(regex, replaceVal) || "[Empty]" },
-			{ name: "Example", value: trimStr(definition.example, 1024, linkStr).replace(regex, replaceVal) || "[Empty]" },
-			{ name: "Rating", value: `${definition.thumbs_up} 👍, ${definition.thumbs_down} 👎.` || "[Empty]" },
-			{ name: "Written", value: Discord.Formatters.time(Date.parse(new Date(definition.written_on)) / 1000, "R") || "[Empty]" },
+			{ name: "Definition", value: definition || "[Empty]" },
+			{ name: "Example", value: example || "[Empty]" },
+			{ name: "Rating", value: `${currentPg.thumbs_up} 👍, ${currentPg.thumbs_down} 👎.` || "[Empty]" },
+			{ name: "Written", value: Discord.Formatters.time(Date.parse(new Date(currentPg.written_on)) / 1000, "R") || "[Empty]" },
 		)
-		.setColor(config.embedColour)
+		.setColor(EMBED_COLOUR)
 		.setTimestamp()
-		.setFooter(`Powered by Urban Dictionary | Page ${currentPage + 1}/${list.length}`, logo);
+		.setFooter(`Powered by Urban Dictionary | Page ${pageNum + 1}/${list.length}`, logo);
 	return newEmbed;
 }

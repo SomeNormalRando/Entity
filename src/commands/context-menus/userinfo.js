@@ -1,10 +1,12 @@
 "use strict";
-const { userInfo } = require("../../commands/utility/userinfo");
+const { userInfo } = require("../utility/userinfo");
 module.exports = {
-	name: "Show user info",
+	data: {
+		name: "User info",
+		type: "USER"
+	},
 	execute(interaction, guildMember) {
 		const embed = userInfo(guildMember);
-
 		interaction.reply({ embeds: [embed] });
 	}
 };

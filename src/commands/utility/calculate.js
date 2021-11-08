@@ -1,8 +1,8 @@
 "use strict";
-const Discord = require("discord.js");
+const { Collection, Formatters, MessageEmbed } = require("discord.js");
 const { performance } = require("perf_hooks");
-const { Util: { SlashCommand, trimStr }, config } = require("../../index");
-const symbols = new Discord.Collection()
+const { Util: { SlashCommand, trimStr }, config: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } } } = require("../../index");
+const symbols = new Collection()
 	.set("sqrt", "√")
 	.set("cbrt", "∛");
 const keys = [];
@@ -25,10 +25,10 @@ module.exports = {
 		const start = performance.now();
 
 		let expr = args.expression;
-		const embed = new Discord.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle("Calculation")
-			.setColor(config.embedColour)
-			.addField("Original Input", trimStr(Discord.Formatters.codeBlock("js", expr ?? "[Empty]"), 1024, "..."));
+			.setColor(EMBED_COLOUR)
+			.addField("Original Input", trimStr(Formatters.codeBlock("js", expr ?? "[Empty]"), FIELD_VALUE, "..."));
 		// Turn functions into symbols
 		for (const [key, value] of symbols) {
 			expr = expr.replace(new RegExp(`${key}\\(${numRegex}\\)`, "g"), `${value}$1`);
@@ -36,7 +36,7 @@ module.exports = {
 		// Strip all invalid characters
 		expr = expr.replace(regex, "");
 
-		embed.addField("Processed Input", trimStr(Discord.Formatters.codeBlock("js", expr || "[Empty]"), 1024, "..."));
+		embed.addField("Processed Input", trimStr(Formatters.codeBlock("js", expr || "[Empty]"), FIELD_VALUE, "..."));
 
 		// Turn symbols into JS functions
 		for (const [key, value] of symbols) {
@@ -45,8 +45,8 @@ module.exports = {
 
 		try {
 			// eslint-disable-next-line no-new-func
-			const result = Discord.Formatters.codeBlock("js", Function(`return ${expr}`)() || "[Empty]");
-			embed.addField("Result", trimStr(result, 1024, "..."))
+			const result = Formatters.codeBlock("js", Function(`return ${expr}`)() || "[Empty]");
+			embed.addField("Result", trimStr(result, FIELD_VALUE, "..."))
 				.setTimestamp()
 				.setFooter(`Calculated in ${(performance.now() - start).toFixed(4)} ms`);
 		} catch {

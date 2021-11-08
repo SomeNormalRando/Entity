@@ -1,6 +1,9 @@
 "use strict";
-const Discord = require("discord.js");
-const { Util: { SlashCommand } } = require("../../index");
+const { Formatters, MessageEmbed, Util: { discordSort }, DiscordAPIError } = require("discord.js");
+const {
+	Util: { SlashCommand, toTitleCase, trimArr },
+	config: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } }
+} = require("../../index");
 module.exports = {
 	data: new SlashCommand({
 		name: "serverinfo",
@@ -12,60 +15,66 @@ module.exports = {
 		interaction.deferReply();
 		this.guildInfo(interaction.guild).then(embed => interaction.editReply({ embeds: [embed] })).catch(err => {
 			console.error(err);
-			interaction.editReply({ content: "An error occured while executing this command", ephemeral: true });
+			interaction.editReply({ content: "An error occurred while executing this command.", ephemeral: true });
 		});
 	},
 	async guildInfo(guild) {
 		const owner = await guild.fetchOwner();
-		const channels = await guild.channels.fetch();
-		const roles = await guild.roles.fetch();
+		const channels = await guild.channels.fetch().catch(err => {
+			if (err instanceof DiscordAPIError) return [];
+			console.error(err);
+		});
+		const roles = await guild.roles.fetch().catch(err => {
+			if (err instanceof DiscordAPIError) return [];
+			console.error(err);
+		});
 
 		const text = {
 			server: [
 				`**Owner:** ${owner} (${owner.user.tag})`,
-				`**Created:** ${Discord.Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}`,
+				`**Created:** ${Formatters.time(Math.round(guild.createdTimestamp / 1000), "R")}`,
 				`**Members:** ${guild.memberCount}`
 			],
 			channels: [
-				`**Categories:** ${channels.filter(c => c.type === "GUILD_CATEGORY").size}`,
-				`**Text:** ${channels.filter(c => c.type === "GUILD_TEXT").size}`,
-				`**Voice:** ${channels.filter(c => c.type === "GUILD_VOICE").size}`
+				`**Categories:** ${channels.filter(ch => ch.type === "GUILD_CATEGORY").size}`,
+				`**Text:** ${channels.filter(ch => ch.type === "GUILD_TEXT").size}`,
+				`**Voice:** ${channels.filter(ch => ch.type === "GUILD_VOICE").size}`
 			],
 			moderation: [
-				`**Verification Level:** ${guild.verificationLevel.toTitleCase()}`,
-				`**Explicit Content Filter:** ${guild.explicitContentFilter.toTitleCase()}`
+				`**Verification Level:** ${toTitleCase(guild.verificationLevel)}`,
+				`**Explicit Content Filter:** ${toTitleCase(guild.explicitContentFilter)}`
 			]
 		};
 
-		// Guild features
-		const guildFeatures = [];
-		for (const feature of guild.features) {
-			guildFeatures.push(feature.toTitleCase());
-		}
-
-		// Contruct embed
-		const embed = new Discord.MessageEmbed()
-			.setColor("#2F3136")
+		// Construct embed
+		const embed = new MessageEmbed()
+			.setColor(EMBED_COLOUR)
 			.setTitle(guild.name)
 			.setThumbnail(guild.iconURL({ dynamic: true }))
 			.addFields(
 				{ name: "__Server__", value: text.server.join("\n") },
 				{ name: "__Channels__", value: text.channels.join("\n"), inline: true },
 				{ name: "__Moderation__", value: text.moderation.join("\n") },
-				{ name: "__Roles__", value: `${roles.size} (${roles.filter(r => r.hoist).size} hoisted)`, inline: true },
+				{ name: "__Roles__", value: `${roles.size} (${roles.filter(role => role.hoist).size} hoisted)`, inline: true },
 			)
 			.setFooter(`ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
 			.setTimestamp();
 
 		// Variable values
-		if (guild.emojis) {
-			embed.addField("Emojis", guild.emojis.cache.map(e => e.toString()).length.toString(), true);
-		}
-		if (guildFeatures.length) {
-			embed.addField("Features", guildFeatures.join(", "));
+		const emojis = discordSort(guild.emojis.cache).map(e => e.toString());
+		embed.addField(`Emojis (${emojis.length})`, trimArr(emojis, FIELD_VALUE, " ") || "None", true);
+
+		if (guild.features.length) {
+			const guildFeatures = [...guild.features].map(feat => toTitleCase(feat));
+			embed.addField("Features", trimArr(guildFeatures, FIELD_VALUE, ", "));
 		}
 		if (guild.premiumSubscriptionCount !== 0) {
-			embed.addField("Boosts", `Level ${guild.premiumTier.substr(5) || "0"} (${guild.premiumSubscriptionCount} boost(s))`, true);
+			const boosts = guild.premiumSubscriptionCount;
+			embed.addField(
+				"Boosts",
+				`Level ${guild.premiumTier.substr(5) || "0"} (${boosts} boost${boosts === 1 ? "" : "s"})`,
+				true
+			);
 		}
 		return embed;
 	}

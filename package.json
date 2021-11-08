@@ -5,21 +5,16 @@
   "main": "src/bot.js",
   "scripts": {
     "start": "cd src && node bot.js",
-    "lint": "eslint .",
-    "dbinit": "cd database & node dbInit.js"
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "SomeNormalRando (https://github.com/SomeNormalRando)",
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
-    "canvas": "^2.8.0",
     "discord-api-types": "^0.22.0",
     "discord-rpc": "^4.0.1",
-    "discord.js": "^13.3.0-dev.1633478700.adc850a",
-    "dotenv": "^8.2.0",
-    "node-fetch": "^2.6.1",
-    "sequelize": "^6.6.5",
-    "sqlite3": "^5.0.2"
+    "discord.js": "^13.3.0",
+    "node-fetch": "^2.6.1"
   }
 }

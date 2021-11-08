@@ -1,5 +1,17 @@
 {
-	"owners": ["728910425780912199"],
-	"inviteLink": "https://discord.com/api/oauth2/authorize?client_id=812960290718482483&permissions=738585664&scope=applications.commands%20bot",
-	"embedColour": "#2F3136"
+	"EMBED_COLOUR": "#2F3136",
+	"EMBED_LIMITS": {
+		"TOTAL_CHARACTERS": 6000,
+		"EMBEDS_PER_MESSAGE": 10,
+		"TITLE": 256,
+		"DESCRIPTION": 4096,
+		"FIELD_NAME": 256,
+		"FIELD_VALUE": 1024
+	},
+	"RESET_ESCAPE_CODE": "\r\u001b[K", 
+	"IGNORE": {
+		"folders": ["image"],
+		"files": ["quote.js", "tag.js", "tags.js"]
+	},
+	"INVITE_LINK": "https://discord.com/api/oauth2/authorize?client_id=812960290718482483&permissions=738585664&scope=applications.commands%20bot"
 }

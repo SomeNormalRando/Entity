@@ -1,12 +1,15 @@
 "use strict";
-const Discord = require("discord.js");
+const config = require("./config.json");
+process.stdout.write(`${config.RESET_ESCAPE_CODE}Running index.js...`);
+
+const { Client } = require("discord.js");
 
 // Create a new Discord client
-const client = new Discord.Client({
+const client = new Client({
 	// Intents
 	intents: ["GUILDS", "GUILD_MESSAGES"],
 	// Status
-	presence: { activities: [{ name: "Existence make me", type: "WATCHING" }] },
+	presence: { activities: [{ name: "your slash commands", type: "LISTENING" }] },
 	// Allowed mentions
 	allowedMentions: { parse: ["users", "roles"], repliedUser: false }
 });
@@ -14,7 +17,7 @@ const client = new Discord.Client({
 // Exports
 module.exports = {
 	client,
+	config,
 	env: require("./env.json"),
-	config: require("./config.json"),
-	Util: require("./assets/Util.js"),
+	Util: require("./assets/Util.js")
 };

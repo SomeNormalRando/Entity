@@ -1,7 +1,6 @@
 "use strict";
 const fs = require("fs");
-const { Util: { SlashCommand } } = require("../../index");
-const { env } = require("../../index");
+const { Util: { SlashCommand }, env: { OWNERS, GUILD_WHITELIST } } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
 		name: "reload",
@@ -11,29 +10,28 @@ module.exports = {
 				name: "command",
 				description: "Command to reload",
 				type: "STRING",
-				// autocomplete: true,
 				required: true
 			},
 			{
-				name: "reregister",
+				name: "re-register",
 				description: "Whether to re-register the command(s)",
 				type: "BOOLEAN",
 				required: false
 			},
 			{
 				name: "global",
-				description: "Whether to re-register the command(s) globally or not (only works if reregister is true)",
+				description: "Whether to re-register the command(s) globally or not (only works if re-register is true)",
 				type: "BOOLEAN",
 				required: false
 			}
 		],
 	}),
-	indev: true,
+	global: false,
 	async execute(interaction, args) {
-		if (!env.OWNERS.includes(interaction.member.id)) return interaction.reply({ content: "You can't use this command.", ephemeral: true });
+		if (!OWNERS.includes(interaction.member.id)) return interaction.reply({ content: "You can't use this command.", ephemeral: true });
 		await interaction.deferReply();
 
-		const client = interaction.client;
+		const { client } = interaction;
 		const cmdName = args.command;
 
 		const command = client.commands.get(cmdName);
@@ -53,8 +51,8 @@ module.exports = {
 
 			await interaction.editReply(`Command \`${cmdName}\` successfully reloaded.`);
 
-			if (args.reregister === true) {
-				const reply = `Command \`${cmdName}\` successfully re-registered.`;
+			if (args["re-register"] === true) {
+				const reply = `Command \`${cmdName}\` successfully re-registered`;
 
 				// Global
 				if (args.global === true) {
@@ -65,29 +63,37 @@ module.exports = {
 								appCommands.edit(cmd.id, newCommand.data);
 								break;
 							}
-						}interaction.followUp(reply);
+						}
+						interaction.followUp(`${reply} globally.`);
 					});
 				// Guild
 				} else {
-					const guildWhitelist = Array.from(env.GUILD_WHITELIST);
+					const guildWhitelist = Array.from(GUILD_WHITELIST);
+					const guildPromises = [];
+					const cmdPromises = [];
 					for (const guildId of guildWhitelist) {
 						const guildCommands = client.guilds.cache.get(guildId).commands;
 
-						guildCommands.fetch().then(result => {
+						guildPromises.push(guildCommands.fetch().then(result => {
 							for (const cmd of result.values()) {
 								if (cmd.name === command.data.name) {
-									guildCommands.edit(cmd.id, newCommand.data);
+									cmdPromises.push(guildCommands.edit(cmd.id, newCommand.data));
 									break;
 								}
 							}
-						});
+						}));
 					}
-					interaction.followUp(reply);
+					await Promise.all(guildPromises);
+					Promise.all(cmdPromises).then(arr => {
+						const guilds = arr.map(cmd => cmd.guildId);
+						interaction.followUp(`${reply} in ${guilds.length} guilds (${guilds.join(", ")}).`);
+					});
 				}
 			}
 		} catch (err) {
 			console.error(err);
-			const stringified = require("discord.js").Formatters.codeBlock(err.toString());
+			// eslint-disable-next-line prefer-template
+			const stringified = "```" + err.toString() + "```";
 			await interaction.editReply({
 				content: `An error occurred while reloading command \`${command.data.name}\`:\n${stringified}`,
 				ephemeral: true

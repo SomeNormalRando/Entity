@@ -1,59 +1,79 @@
 "use strict";
+const { MessageEmbed, Util, Formatters } = require("discord.js");
+const {
+	config: { EMBED_LIMITS: { FIELD_VALUE }, EMBED_COLOUR },
+	Util: { SlashCommand, toTitleCase, trimArr, testCol },
+	env
+} = require("../../index.js");
 module.exports = {
-	data: {
+	data: new SlashCommand({
 		name: "userinfo",
-		description: "Gives info for a user.",
-		options: [{
-			name: "user",
-			type: "USER",
-			description: "The user to show info about",
-			required: false,
-		}]
-	},
+		description: "Get info on a user",
+		options: [
+			{
+				name: "user",
+				type: "USER",
+				description: "The user to show info for",
+				required: false,
+			},
+			{
+				name: "roles",
+				type: "BOOLEAN",
+				description: "Whether to show the user's roles (default true)",
+				required: false,
+			},
+			{
+				name: "permissions",
+				type: "BOOLEAN",
+				description: "Whether to show the user's permissions (default true)",
+				required: false,
+			}
+		]
+	}),
 	cooldown: "5",
 	guildOnly: [true],
 	execute(interaction, args) {
-		const embed = this.userInfo(args.user || interaction.member);
+		const embed = this.userInfo(args.user || interaction.member, args.roles ?? true, args.permissions ?? true);
 		interaction.reply({ embeds: [embed] });
 	},
-	userInfo(guildMember) {
-		const Discord = require("discord.js");
-		const user = guildMember.user;
-
-		// Permissions
-		const permissions = [];
-		if (guildMember.permissions.has("ADMINISTRATOR")) {
-			permissions[0] = "Administrator (all permissions)";
-		} else {
-			for (const permission of guildMember.permissions.toArray().sort()) {
-				permissions.push(permission.toTitleCase(/VAD/i, /TTS/i));
-			}
-		}
-
-		// Roles
-		const roleIds = Discord.Util.discordSort(guildMember.roles.cache).filter(e => e.id !== guildMember.guild.id);
-		const roles = roleIds.map(role => role.toString());
+	userInfo(guildMember, showRoles = true, showPermissions = true) {
+		const { user } = guildMember;
 
 		// Construct embed
-		const embed = new Discord.MessageEmbed()
-			.setColor(guildMember.displayHexColor)
+		const embed = new MessageEmbed()
+			.setColor(testCol(guildMember.displayHexColor, EMBED_COLOUR))
 			.setTitle(user.tag)
 			.setDescription(guildMember.toString())
 			.setThumbnail(user.displayAvatarURL({ format: "png", dynamic: true }))
 			.addFields(
-				{ name: "Registered", value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>` },
-				{ name: "Joined", value: `<t:${Math.floor(guildMember.joinedTimestamp / 1000)}:R>` },
-				{ name: "Display Colour (Hex)", value: guildMember.displayHexColor.toUpperCase(), inline: true },
-				{ name: `Roles (${roles.length})`, value: roles.reverse().join(" ") },
-				{ name: "Permissions", value: permissions.join(", ") },
+				{ name: "Registered", value: `${Formatters.time(Math.round(user.createdTimestamp / 1000), "R")}` },
+				{ name: "Joined", value: `${Formatters.time(Math.round(guildMember.joinedTimestamp / 1000), "R")}` },
+				{ name: "Display Colour (Hex)", value: testCol(guildMember.displayHexColor.toUpperCase()), inline: true },
 			)
 			.setTimestamp()
 			.setFooter(`User ID: ${user.id}`);
 
-		// Ackowledgements (extra variable info to add)
+		// Roles
+		if (showRoles === true) {
+			// Sort, remove @everyone and map to mentions
+			const roles = Util.discordSort(guildMember.roles.cache)
+				.filter(e => e.id !== guildMember.guild.id)
+				.map(role => role.toString())
+				.reverse();
+			embed.addField(`Roles (${roles.length})`, trimArr(roles, FIELD_VALUE, " "));
+		}
+		// Permissions
+		if (showPermissions === true) {
+			const permissions = guildMember.permissions.has("ADMINISTRATOR")
+				? ["Administrator (all permissions)"]
+				: guildMember.permissions.toArray().sort().map(perm => toTitleCase(perm, /VAD/i, /TTS/i));
+			embed.addField("Permissions", trimArr(permissions, FIELD_VALUE));
+		}
+
+		// Acknowledgements (extra variable info to add)
 		const acknowledgements = [];
 
-		if (require("../../index").env.OWNERS.includes(user.id)) acknowledgements.push(`Developer of ${guildMember.client.user.username}`);
+		if (env.OWNERS.includes(user.id)) acknowledgements.push(`Developer of ${guildMember.client.user.username}`);
 		if (guildMember.guild.ownerId === user.id) {
 			acknowledgements.push("Server Owner");
 		}
@@ -61,7 +81,7 @@ module.exports = {
 			acknowledgements.push("Server Administrator");
 		}
 		if (guildMember.premiumSince) {
-			acknowledgements.push(`Boosting server since ${Discord.Formatters.time(Math.round(guildMember.premiumSinceTimestamp / 1000), "R")}`);
+			acknowledgements.push(`Boosting server since ${Formatters.time(Math.round(guildMember.premiumSinceTimestamp / 1000), "R")}`);
 		}
 
 		if (acknowledgements.length) embed.addField("Acknowledgements", acknowledgements.join(", "));

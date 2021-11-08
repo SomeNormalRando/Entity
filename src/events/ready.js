@@ -1,69 +1,64 @@
 "use strict";
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-const { env } = require("../index");
+const { env: { TOKEN, GUILD_WHITELIST }, config: { RESET_ESCAPE_CODE } } = require("../index");
+const readyMsg = `
+█▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█
+██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █`;
+
 module.exports = {
 	name: "ready",
 	once: true,
-	execute(client) {
-		// Whether to register commands or not
+	async execute(client) {
+		process.stdout.write(RESET_ESCAPE_CODE);
+
+		// Determine whether to register commands or not based on argv
 		if (process.argv.includes("r") || process.argv.includes("register")) {
 			const global = process.argv.includes("g") || process.argv.includes("global");
-			const clear = process.argv.includes("c") || process.argv.includes("clear");
-			reloadCommands(client, global, clear);
-		}
 
-		// Log message on ready
-		console.log("█▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█");
-		console.log("██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █ \n");
+			const registerType = global === true ? "global" : "guild";
+			console.log(`\x1b[34mStarted reloading ${registerType} commands.\x1b[00m`);
 
-		console.log(`Logged in as ${client.user.tag}.`);
-	}
-};
-/**
- * Registers commands to the Discord API
- * @param {import("discord.js").Client} client The client to register commands for
- * @param {Boolean} [global=false] Whether to register the commands globally
- * @param {Boolean} [clear=false] Whether to overwrite the commands with an empty array
- */
-function reloadCommands(client, global, clear) {
-	const commands = [];
-	const registerType = global === true ? "global" : "guild";
-	console.log(`Started reloading ${registerType} commands.`);
-
-	if (clear !== true) {
-		if (global === true) {
-			client.commands.each(cmd => {
-				if (!cmd.indev && !cmd.dontRegister) commands.push(cmd.data);
-			});
-		} else {
-			client.commands.each(cmd => {
-				if (!cmd.dontRegister) commands.push(cmd.data);
-			});
-		}
-	}
-
-	const rest = new REST({ version: "9" }).setToken(env.TOKEN);
-
-	try {
-		if (global === true) {
-			// Global commands
-			rest.put(
-				Routes.applicationCommands(client.user.id),
-				{ body: commands },
-			);
-		} else {
-			// Guild commands
-			const guildWhitelist = Array.from(env.GUILD_WHITELIST);
-			for (const guildId of guildWhitelist) {
-				rest.put(
-					Routes.applicationGuildCommands(client.user.id, guildId),
-					{ body: commands },
+			try {
+				// Wait for every command to finish registering
+				const result = await Promise.all(
+					reloadCommands(client.user.id, global, client.commands)
 				);
+				console.log(`\x1b[34mSuccessfully reloaded ${registerType} commands${global === true ? "" : ` in ${result.length} guilds`}.\x1b[00m\n`);
+			} catch (err) {
+				console.error(`\x1b[1;91mError while reloading ${registerType} commands:\x1b[0m`, err);
 			}
 		}
-		console.log(`Successfully reloaded ${registerType} commands.\n`);
-	} catch (error) {
-		console.error(error);
+
+		// Log messages on ready
+		console.log(`\x1b[3;92mLogged in as ${client.user.tag}.\x1b[0m\n\x1b[34m${readyMsg}\x1b[0m\n`);
 	}
+};
+function reloadCommands(userId, global, commands) {
+	const results = [];
+	if (global === true) {
+		commands = commands.filter(cmd => cmd.global !== false);
+	}
+	commands = commands.map(cmd => cmd.data);
+
+	const rest = new REST({ version: "9" }).setToken(TOKEN);
+
+	if (global === true) {
+		// Global commands
+		results.push(rest.put(
+			Routes.applicationCommands(userId),
+			{ body: commands },
+		));
+	} else {
+		// Guild commands
+		const guildWhitelist = Array.from(GUILD_WHITELIST);
+		for (const guildId of guildWhitelist) {
+			results.push(rest.put(
+				Routes.applicationGuildCommands(userId, guildId),
+				{ body: commands },
+			));
+		}
+	}
+
+	return results;
 }

@@ -1,5 +1,5 @@
 "use strict";
-const { config, env, Util: { discordEval } } = require("../index.js");
+const { config: { INVITE_LINK }, env, Util: { discordEval } } = require("../index.js");
 module.exports = {
 	name: "messageCreate",
 	once: false,
@@ -7,15 +7,11 @@ module.exports = {
 	execute(message) {
 		if (message.author.bot || message.webhookID) return;
 
-		// Message commands
-		const mention = `<@!${message.client.user.id}>`;
-
-
-		if (message.content.startsWith(mention)) {
+		if (new RegExp(`^<@!?${message.client.user.id}>`).test(message.content)) {
 			const lines = [
 				"__**Message commands have been removed, use slash commands instead.**__",
 				"*For more info on slash commands, visit <https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ>.*",
-				`\n4(If slash commands don't appear, try re-inviting the bot with this link: ${config.inviteLink})`,
+				`\n4(If slash commands don't appear, try re-inviting the bot with this link: ${INVITE_LINK})`,
 			];
 			return message.reply(lines.join("\n"));
 		}

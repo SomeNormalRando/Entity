@@ -1,4 +1,6 @@
 "use strict";
+const { MessageEmbed } = require("discord.js");
+const { config: { EMBED_COLOUR } } = require("../../index");
 module.exports = {
 	data: {
 		name: "choose",
@@ -67,6 +69,12 @@ module.exports = {
 		]
 	},
 	async execute(interaction, args) {
-		await interaction.reply(`I choose \`${Object.values(args).random()}\`.`);
+		// Filter null and undefined elements
+		const choices = Object.values(args).filter(e => e != null);
+		const embed = new MessageEmbed()
+			.setTitle(`I choose __${choices.random()}__`)
+			.setColor(EMBED_COLOUR)
+			.setFooter(`Choosing from ${choices.join(", ")}`);
+		await interaction.reply({ embeds: [embed] });
 	},
 };

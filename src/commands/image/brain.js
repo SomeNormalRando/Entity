@@ -48,7 +48,6 @@ module.exports = {
 
 		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), "brain.png");
 		await interaction.editReply({ files: [attachment] });
-
 	},
 };
 function applyText(canvas, text) {
