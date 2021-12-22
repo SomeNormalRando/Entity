@@ -1,8 +1,9 @@
 "use strict";
+const baseURL = "https://letmegooglethat.com?q=";
 module.exports = {
 	data: {
 		name: "lmgtfy",
-		description: "Generates a LMGTFY (Let Me Google That For You) link",
+		description: "Generate a LMGTFY (Let Me Google That For You) link",
 		options: [{
 			name: "query",
 			description: "The search query",
@@ -11,9 +12,6 @@ module.exports = {
 		}]
 	},
 	async execute(interaction, args) {
-		const link = "https://letmegooglethat.com?q=";
-		const query = encodeURIComponent(args.query);
-
-		await interaction.reply(link + query);
+		await interaction.reply(`${baseURL}${encodeURIComponent(args.query)}`);
 	},
 };

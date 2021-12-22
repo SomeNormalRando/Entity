@@ -1,13 +1,24 @@
 "use strict";
 const { Collection, Formatters, MessageEmbed } = require("discord.js");
-const { Util: { errSep }, Util: { createErrorEmbed, toTitleCase } } = require("../index");
+const {
+	Constants: { errorEmojis, errorSep, EMBED_COLOUR },
+	Util: { createErrorEmbed, toTitleCase, addS },
+	config: { MAX_CHOICE_LENGTH }
+} = require("../index");
 module.exports = {
 	name: "interactionCreate",
 	once: false,
 	async execute(interaction, client) {
 		// Slash commands
 		if (interaction.isCommand()) {
-			if (!client.commands.has(interaction.commandName)) return;
+			if (!client.commands.has(interaction.commandName)) {
+				return interaction.reply({ embeds: [
+					new MessageEmbed()
+						.setTitle(`Sorry, this command is not currently implemented ${errorEmojis.random()}`)
+						.setDescription("It might be temporarily disabled. Please check back again in the future.")
+				] });
+			}
+
 			const command = client.commands.get(interaction.commandName);
 			const commandName = command.data.name;
 
@@ -25,8 +36,9 @@ module.exports = {
 
 				if (missingPerms.length) {
 					const embed = new MessageEmbed()
-						.setTitle("You don't have enough permissions!")
-						.setDescription(`You still need the permission(s) ${missingPerms.join(" ")} to use this command.`);
+						.setTitle("You don't have the required permissions")
+						.setColor(EMBED_COLOUR)
+						.setDescription(`You still need the permission${addS(missingPerms.length)} ${missingPerms.join(" ")} to use this command.`);
 					return interaction.reply({ embeds: [embed] });
 				}
 			}
@@ -47,8 +59,7 @@ module.exports = {
 				if (now < expirationTime) {
 					const timeLeft = (expirationTime - now) / 1000;
 					return interaction.reply({
-						// eslint-disable-next-line max-len
-						content: `Please wait ${timeLeft.toFixed(1)} more second${timeLeft === 1 ? "" : "s"} before reusing the command \`${commandName}\`.`,
+						content: `Please wait ${timeLeft.toFixed(1)} more second${addS(timeLeft)} before reusing the command \`${commandName}\`.`,
 						ephemeral: true
 					});
 				}
@@ -80,16 +91,38 @@ module.exports = {
 			try {
 				await command.execute(interaction, args);
 			} catch (err) {
-				console.error(`${errSep}\n\x1b[91mError at command \`${commandName}\`:\x1b[0m`, err, `\n${errSep}`);
+				console.error(`${errorSep}\n\x1b[91mError at command \`${commandName}\`:\x1b[0m`, err, `\n${errorSep}`);
 
 				const reply = { embeds: [createErrorEmbed()], ephemeral: true };
 				if (interaction.replied || interaction.deferred) interaction.followUp(reply);
 				else interaction.reply(reply);
 			}
+		// Autocomplete
+		} else if (interaction.isAutocomplete()) {
+			const command = client.commands.get(interaction.commandName);
+			const commandName = command.data.name;
+
+			if (!command.autocomplete) return console.log(`Autocomplete interaction received for command \`${commandName}\` but no autocomplete function was found.`);
+
+			try {
+				const result = await command.autocomplete(interaction);
+				if (!Array.isArray(result)) return console.log(`Return value of autocomplete function for command \`${commandName}\` is not an array.`);
+
+				// ? .slice is to limit the response to the max choice length
+				await interaction.respond(result.slice(0, MAX_CHOICE_LENGTH));
+			} catch (err) {
+				console.error(`${errorSep}\n\x1b[91mError at autocomplete for command \`${commandName}\`:\x1b[0m`, err, `\n${errorSep}`);
+			}
 
 		// Context menus
 		} else if (interaction.isContextMenu()) {
-			if (!client.commands.has(interaction.commandName)) return;
+			if (!client.commands.has(interaction.commandName)) {
+				return interaction.reply({ embeds: [
+					new MessageEmbed()
+						.setTitle(`Sorry, this command is not currently implemented ${errorEmojis.random()}`)
+						.setDescription("It might be temporarily disabled. Please check back again in the future.")
+				] });
+			}
 
 			const command = await client.commands.get(interaction.commandName);
 
@@ -100,8 +133,7 @@ module.exports = {
 			try {
 				await command.execute(interaction, arg);
 			} catch (err) {
-				console.error(`${errSep}\n\x1b[91mError at context menu \`${interaction.commandName}\`:\x1b[0m`, err, `\n${errSep}`);
-
+				error(`context menu \`${interaction.commandName}\``, err);
 				const reply = { embeds: [createErrorEmbed()], ephemeral: true };
 				if (interaction.replied || interaction.deferred) interaction.followUp(reply);
 				else interaction.reply(reply);
@@ -109,3 +141,15 @@ module.exports = {
 		}
 	}
 };
+/**
+ * @example error("command `testing`", new Error("Testing!"))
+ * // Will log the below (coloured) to stderr
+ * // ──────────────────────────────────────────────────
+ * // Error at command `testing`: Error: Testing!
+ * //     at testing.js:1:1
+ * //     ...etc
+ * // ──────────────────────────────────────────────────
+ */
+function error(where, err) {
+	console.error(`${errorSep}\n\x1b[91mError at ${where}: \x1b[0m${err}\n${errorSep}`);
+}

@@ -1,6 +1,6 @@
 "use strict";
 const { MessageEmbed } = require("discord.js");
-const { config: { EMBED_COLOUR }, Util: { fillArray, fetchResource } } = require("../../index.js");
+const { Constants: { EMBED_COLOUR }, Util: { createErrorEmbed, fillArray, fetchResource } } = require("../../index.js");
 // eslint-disable-next-line camelcase
 const subreddits = { memes: 5, dankmemes: 3, me_irl: 2, AdviceAnimals: 1 };
 const choices = [];
@@ -8,6 +8,7 @@ const choices = [];
 for (const sub of Object.keys(subreddits)) {
 	choices.push({ name: sub, value: sub });
 }
+const errReply = { embeds: [createErrorEmbed("while fetching your meme", "I couldn't find a meme that could be shown. Please try again.")], ephemeral: true };
 module.exports = {
 	data: {
 		name: "meme",
@@ -22,9 +23,13 @@ module.exports = {
 			}
 		]
 	},
+	cooldown: 5,
 	async execute(interaction, args) {
 		await interaction.deferReply();
 		const result = await getPost(args.subreddit);
+		if (!result) {
+			return interaction.editReply(errReply);
+		}
 
 		const embed = new MessageEmbed()
 			.setColor(EMBED_COLOUR)
@@ -37,18 +42,19 @@ module.exports = {
 	}
 };
 async function getPost(subreddit = fillArray(subreddits).random()) {
-	const result = await fetchResource(`https://reddit.com/r/${subreddit}/random.json`);
+	const result = await fetchResource(`https://reddit.com/r/${subreddit}/random.json`).catch(_ => null);
+
+	if (result === null) return null;
 
 	let data;
 	for (let i = 0, len = result[0].data.children.length; i < len; i++) {
-		const temp = result[0].data.children[i].data;
-		if (temp.over_18 || temp.is_video || !temp.url || !temp.permalink) {
+		const current = result[0].data.children[i].data;
+		if (current.over_18 || !current.url || !current.permalink) {
 			continue;
 		} else {
-			data = temp;
+			data = current;
 			break;
 		}
 	}
-	data ??= getPost(subreddit);
 	return data;
 }

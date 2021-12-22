@@ -1,6 +1,6 @@
 "use strict";
 const Discord = require("discord.js");
-const { EMBED_COLOUR } = require("../config.json");
+const { EMBED_COLOUR } = require("./Constants");
 const evalFlags = {
 	"async": ["--run-async", "--async", "-a"],
 	"no-send": ["--no-send", "-ns", "-s"]

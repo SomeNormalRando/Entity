@@ -10,6 +10,7 @@ module.exports = {
 				name: "command",
 				description: "Command to reload",
 				type: "STRING",
+				autocomplete: true,
 				required: true
 			},
 			{
@@ -99,5 +100,13 @@ module.exports = {
 				ephemeral: true
 			});
 		}
+	},
+	autocomplete(interaction) {
+		const selected = interaction.options.getString("command");
+		// Get commands that match
+		const matches = interaction.client.commands.filter(e => e.data.name.startsWith(selected));
+
+		// Map to choice object
+		return matches.map(e => ({ name: e.data.name, value: e.data.name }));
 	}
 };

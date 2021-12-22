@@ -8,7 +8,8 @@
 		"FIELD_NAME": 256,
 		"FIELD_VALUE": 1024
 	},
-	"RESET_ESCAPE_CODE": "\r\u001b[K", 
+	"MAX_CHOICE_LENGTH": 25,
+	"RESET_ESCAPE_CODE": "\r\u001b[K",
 	"IGNORE": {
 		"folders": ["image"],
 		"files": ["quote.js", "tag.js", "tags.js"]

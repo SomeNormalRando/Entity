@@ -1,8 +1,8 @@
 "use strict";
 const { Formatters, MessageEmbed, Util: { discordSort }, DiscordAPIError } = require("discord.js");
 const {
-	Util: { SlashCommand, toTitleCase, trimArr },
-	config: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } }
+	Constants: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } },
+	Util: { SlashCommand, toTitleCase, trimArr, addS }
 } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
@@ -72,7 +72,7 @@ module.exports = {
 			const boosts = guild.premiumSubscriptionCount;
 			embed.addField(
 				"Boosts",
-				`Level ${guild.premiumTier.substr(5) || "0"} (${boosts} boost${boosts === 1 ? "" : "s"})`,
+				`Level ${guild.premiumTier.substr(5) || "0"} (${boosts} boost${addS(boosts)})`,
 				true
 			);
 		}

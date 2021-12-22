@@ -2,3 +2,4 @@ node_modules/
 env.json
 *.code-workspace
 rpc.js
+example-data/

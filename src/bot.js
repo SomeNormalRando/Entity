@@ -4,7 +4,7 @@ process.stdout.write("Running bot.js...");
 // eslint-disable-next-line id-length
 const { Collection, ApplicationCommandManager } = require("discord.js");
 const { readdirSync } = require("fs");
-const { client, env: { TOKEN }, config: { RESET_ESCAPE_CODE, IGNORE }, Util: { errSep } } = require("./index");
+const { client, env: { TOKEN }, config: { IGNORE }, Constants: { RESET_ESCAPE_CODE }, Util: { errSep } } = require("./index");
 
 client.commands = new Collection();
 client.cooldowns = new Collection();

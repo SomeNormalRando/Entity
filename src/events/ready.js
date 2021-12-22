@@ -1,7 +1,7 @@
 "use strict";
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-const { env: { TOKEN, GUILD_WHITELIST }, config: { RESET_ESCAPE_CODE } } = require("../index");
+const { env: { TOKEN, GUILD_WHITELIST }, Constants: { RESET_ESCAPE_CODE } } = require("../index");
 const readyMsg = `
 █▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█
 ██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █`;
@@ -24,9 +24,11 @@ module.exports = {
 				const result = await Promise.all(
 					reloadCommands(client.user.id, global, client.commands)
 				);
+
 				console.log(`\x1b[34mSuccessfully reloaded ${registerType} commands${global === true ? "" : ` in ${result.length} guilds`}.\x1b[00m\n`);
 			} catch (err) {
 				console.error(`\x1b[1;91mError while reloading ${registerType} commands:\x1b[0m`, err);
+				console.log("Commands:\n", client.commands);
 			}
 		}
 

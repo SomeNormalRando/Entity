@@ -1,6 +1,6 @@
 "use strict";
 const Discord = require("discord.js");
-const { Util: { SlashCommand }, config: { EMBED_COLOUR } } = require("../../index");
+const { Util: { SlashCommand }, Constants: { EMBED_COLOUR } } = require("../../index");
 module.exports = {
 	data: new SlashCommand({
 		name: "avatar",

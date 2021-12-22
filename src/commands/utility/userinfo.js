@@ -1,7 +1,7 @@
 "use strict";
 const { MessageEmbed, Util, Formatters } = require("discord.js");
 const {
-	config: { EMBED_LIMITS: { FIELD_VALUE }, EMBED_COLOUR },
+	Constants: { EMBED_LIMITS: { FIELD_VALUE }, EMBED_COLOUR },
 	Util: { SlashCommand, toTitleCase, trimArr, testCol },
 	env
 } = require("../../index.js");

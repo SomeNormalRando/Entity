@@ -1,7 +1,7 @@
 "use strict";
 const { Collection, Formatters, MessageEmbed } = require("discord.js");
 const { performance } = require("perf_hooks");
-const { Util: { SlashCommand, trimStr }, config: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } } } = require("../../index");
+const { Util: { SlashCommand, trimStr }, Constants: { EMBED_COLOUR, EMBED_LIMITS: { FIELD_VALUE } } } = require("../../index");
 const symbols = new Collection()
 	.set("sqrt", "√")
 	.set("cbrt", "∛");

@@ -1,6 +1,6 @@
 "use strict";
 const Discord = require("discord.js");
-const { config: { EMBED_COLOUR } } = require("../../index");
+const { Constants: { EMBED_COLOUR } } = require("../../index");
 const emojiNumbers = {
 	1: "1️⃣",
 	2: "2️⃣",

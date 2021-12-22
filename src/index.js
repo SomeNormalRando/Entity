@@ -1,6 +1,6 @@
 "use strict";
-const config = require("./config.json");
-process.stdout.write(`${config.RESET_ESCAPE_CODE}Running index.js...`);
+const Constants = require("./assets/Constants");
+process.stdout.write(`${Constants.RESET_ESCAPE_CODE}Running index.js...`);
 
 const { Client } = require("discord.js");
 
@@ -17,7 +17,8 @@ const client = new Client({
 // Exports
 module.exports = {
 	client,
-	config,
+	config: require("./config.json"),
 	env: require("./env.json"),
-	Util: require("./assets/Util.js")
+	Constants,
+	Util: require("./assets/Util")
 };

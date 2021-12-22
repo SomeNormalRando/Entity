@@ -1,7 +1,9 @@
 "use strict";
 const Discord = require("discord.js");
-const fetch = require("node-fetch");
-const { config: { EMBED_COLOUR, EMBED_LIMITS }, Util: { SlashCommand, disableButtons, trimStr, createErrorEmbed } } = require("../../index.js");
+const {
+	Constants: { EMBED_COLOUR, EMBED_LIMITS },
+	Util: { SlashCommand, disableButtons, trimStr, createErrorEmbed, fetchResource }
+} = require("../../index.js");
 
 const logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/UD_logo-01.svg/1920px-UD_logo-01.svg.png";
 const idLast = "define_last";
@@ -30,71 +32,63 @@ module.exports = {
 	}),
 	cooldown: 7,
 	async execute(interaction, args) {
-		const { term } = args;
 		await interaction.deferReply();
-		let successful = true;
+		const { term } = args;
 		const query = encodeURIComponent(term);
-		const { list } = await fetch(`https://api.urbandictionary.com/v0/define?term=${query}`)
-			.then(response => response.json())
-			.catch(error => {
-				console.error(error);
-				successful = false;
-			});
-		if (successful === false) {
-			return interaction.editReply({ embeds: [createErrorEmbed()], ephemeral: true });
-		}
 
-		if (!list || !list.length) {
-			const embed = new Discord.MessageEmbed()
-				.setColor(EMBED_COLOUR)
-				.addField(
-					`No results found for "${term}"`,
-					`[Try searching for it](https://www.urbandictionary.com/define.php?term=${query})`
-				)
-				.setTimestamp()
-				.setFooter("Powered by Urban Dictionary", logo);
-			return interaction.editReply({ embeds: [embed] });
-		}
+		fetchResource(`https://api.urbandictionary.com/v0/define?term=${query}`).then(({ list }) => {
+			if (!list || !list.length) {
+				const embed = new Discord.MessageEmbed()
+					.setColor(EMBED_COLOUR)
+					.addField(
+						`No results found for "${term}"`,
+						`[Try searching for it](https://www.urbandictionary.com/define.php?term=${query})`
+					)
+					.setTimestamp()
+					.setFooter("Powered by Urban Dictionary", logo);
+				return interaction.editReply({ embeds: [embed] });
+			}
 
-		let currentPage = 0;
-		const firstEmbed = genEmbed(list, currentPage);
+			let currentPage = 0;
+			const firstEmbed = genEmbed(list, currentPage);
 
-		let [firstRow] = disableButtons(idLast, new Discord.MessageActionRow(templateRow));
+			let [firstRow] = disableButtons(idLast, new Discord.MessageActionRow(templateRow));
 
-		if (list.length <= 1) [firstRow] = disableButtons(idNext, firstRow);
+			if (list.length <= 1) [firstRow] = disableButtons(idNext, firstRow);
 
-		interaction.editReply({ embeds: [firstEmbed], components: [firstRow] }).then(message => {
-			let embed = firstEmbed;
-			const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
-			collector.on("collect", i => {
-				if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
-				i.deferUpdate();
-				if (i.customId === idLast) {
-					if (currentPage < 0) return interaction.followUp("An error occurred.");
+			interaction.editReply({ embeds: [firstEmbed], components: [firstRow] }).then(message => {
+				let embed = firstEmbed;
+				const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
+				collector.on("collect", i => {
+					if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
+					i.deferUpdate();
+					if (i.customId === idLast) {
+						if (currentPage < 0) return interaction.followUp("An error occurred.");
 
-					embed = genEmbed(list, currentPage -= 1);
-					let [row] = [new Discord.MessageActionRow(templateRow)];
-					if (currentPage === 0) [row] = disableButtons(idLast, row);
+						embed = genEmbed(list, currentPage -= 1);
+						let [row] = [new Discord.MessageActionRow(templateRow)];
+						if (currentPage === 0) [row] = disableButtons(idLast, row);
 
+						interaction.editReply({ embeds: [embed], components: [row] });
+					} else if (i.customId === idNext) {
+						if (currentPage > list.length) return interaction.followUp("An error occurred.");
+
+						embed = genEmbed(list, currentPage += 1);
+						let [row] = [new Discord.MessageActionRow(templateRow)];
+						if (currentPage === list.length - 1) [row] = disableButtons(idNext, row);
+
+						interaction.editReply({ embeds: [embed], components: [row] });
+					}
+				});
+				setTimeout(() => {
+					const [row] = disableButtons("_all", new Discord.MessageActionRow(templateRow));
 					interaction.editReply({ embeds: [embed], components: [row] });
-				} else if (i.customId === idNext) {
-					if (currentPage > list.length) return interaction.followUp("An error occurred.");
-
-					embed = genEmbed(list, currentPage += 1);
-					let [row] = [new Discord.MessageActionRow(templateRow)];
-					if (currentPage === list.length - 1) [row] = disableButtons(idNext, row);
-
-					interaction.editReply({ embeds: [embed], components: [row] });
-				}
+				}, time);
+			}).catch(err => {
+				console.error(err);
+				interaction.editReply("An error occurred.");
 			});
-			setTimeout(() => {
-				const [row] = disableButtons("_all", new Discord.MessageActionRow(templateRow));
-				interaction.editReply({ embeds: [embed], components: [row] });
-			}, time);
-		}).catch(err => {
-			console.error(err);
-			interaction.editReply("An error occurred.");
-		});
+		}).catch(_ => interaction.editReply({ embeds: [createErrorEmbed(`while fetching the definition for ${term}`)], ephemeral: true }));
 	}
 };
 const regex = /\[(.+?)\]/g;

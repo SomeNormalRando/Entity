@@ -4,7 +4,7 @@ Source code for my Discord bot, Entity
 [Invite link](https://discord.com/api/oauth2/authorize?client_id=812960290718482483&permissions=738585664&scope=applications.commands%20bot) (it isn't always online because I host it locally)
 
 ## Stuff
-<small>mostly to remind me if i forget</small>
+<sup><sub>mostly to remind me if i forget</sub></sup>
 
 All source code is in `src/`
 

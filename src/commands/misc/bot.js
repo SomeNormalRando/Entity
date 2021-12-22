@@ -1,6 +1,10 @@
 "use strict";
 const Discord = require("discord.js");
-const { Util: { SlashCommand }, config: { INVITE_LINK, EMBED_COLOUR }, env: { OWNERS } } = require("../../index");
+const {
+	Constants: { EMBED_COLOUR, DEVELOPERS },
+	Util: { SlashCommand, addS },
+	config: { INVITE_LINK },
+} = require("../../index");
 
 const adminInvite = INVITE_LINK.replace(/permissions=\d+/, "permissions=8");
 const jsURL = "https://en.wikipedia.org/wiki/JavaScript";
@@ -34,15 +38,21 @@ module.exports = {
 				.setTimestamp()
 				.setFooter(client.user.tag, client.user.displayAvatarURL({ format: "png", dynamic: true }));
 		} else if (args.subcommand === "info") {
-			const me = client.users.cache.get(OWNERS[0]);
+			const devNames = [];
+			for (const devId of DEVELOPERS) {
+				const dev = client.users.cache.get(devId);
+				devNames.push(dev.tag);
+			}
 			embed
 				.setTitle("Bot info")
 				.setDescription(`Written in [JavaScript](${jsURL}) with [Discord.js](${djsURL}) version ${Discord.version}`)
 				.addFields(
-					{ name: "Owner", value: `${me.tag} (${me.toString()})` },
-					{ name: "Servers", value: `${client.guilds.cache.size}` },
-					{ name: "Total commands", value: `${client.commands.size}` },
-					{ name: "Source code", value: `[View on GitHub](${sourceURL})` }
+					{ name: `Developer${addS(DEVELOPERS)}`, value: devNames.join(", ") },
+					{ name: "Total commands", value: `${client.commands.size}`, inline: true },
+					{ name: "Source code", value: `[View on GitHub](${sourceURL})`, inline: true },
+					{ name: "Server count", value: `${client.guilds.cache.size}`, inline: true },
+					{ name: "Uptime", value: `${Math.floor(process.uptime() / 60)} minutes`, inline: true },
+					{ name: "Memory usage", value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, inline: true }
 				)
 				.setTimestamp()
 				.setFooter(`${client.user.tag} | ID: ${client.user.id}`, client.user.displayAvatarURL({ format: "png", dynamic: true }));

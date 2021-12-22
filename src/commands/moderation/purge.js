@@ -1,10 +1,12 @@
 "use strict";
-const Discord = require("discord.js");
-const { Util } = require("../../index.js");
+const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { Util: { disableButtons, addS }, Constants: { EMBED_COLOUR } } = require("../../index.js");
 
-const time = 7000;
-const id_yes = "purge_yes";
-const id_no = "purge_no";
+const wait = require("node:util").promisify(setTimeout);
+
+const time = 7500;
+const idYes = "purge_yes";
+const idNo = "purge_no";
 module.exports = {
 	data: {
 		name: "purge",
@@ -19,55 +21,64 @@ module.exports = {
 	guildOnly: true,
 	userPerms: ["MANAGE_MESSAGES"],
 	async execute(interaction, args) {
-		const amount = args.amount;
+		const embed = new MessageEmbed().setColor(EMBED_COLOUR);
+		if (!interaction.channel.permissionsFor(interaction.guild.me).has("MANAGE_MESSAGES")) {
+			embed
+				.setTitle("I don't have sufficient permissions")
+				.setDescription("I need the Manage Messages permission in this channel to purge messages.");
+			return interaction.reply({ embeds: [embed], ephemeral: true });
+		}
 
+		const { amount } = args;
 
-		let row = new Discord.MessageActionRow()
+		let row = new MessageActionRow()
 			.addComponents(
-				new Discord.MessageButton()
-					.setCustomId(id_yes)
+				new MessageButton()
+					.setCustomId(idYes)
 					.setLabel("Yes")
 					.setStyle("DANGER"),
-				new Discord.MessageButton()
-					.setCustomId(id_no)
+				new MessageButton()
+					.setCustomId(idNo)
 					.setLabel("No")
 					.setStyle("SECONDARY")
 			);
-		// Confirmation reply
+
+		embed
+			.setTitle(`Are you sure you want to delete ${amount} message${addS(amount)} in #${interaction.channel.name}?`)
+			.setDescription("This action cannot be undone.");
+		// Initial confirmation reply
 		const message = await interaction.reply({
-			content: `Are you sure you want to delete ${amount} message${amount === 1 ? "" : "s"} in ${interaction.channel.toString()}?`,
+			embeds: [embed],
 			components: [row],
 			fetchReply: true
 		});
 
-		// Confirmation buttons
+		// Collect confirmation buttons
 		const collector = message.createMessageComponentCollector({ componentType: "BUTTON", time });
 
-		collector.on("collect", i => {
+		collector.on("collect", async i => {
 			if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one running this command.", ephemeral: true });
-			i.deferUpdate();
-			if (i.customId === id_yes) {
-				[row] = Util.disableButtons("_all", row);
-				interaction.channel.bulkDelete(args.amount, true)
-					.then(deletedAmount => {
-						interaction.channel.send({ content: `Deleted ${deletedAmount.size} message${amount === 1 ? "" : "s"}.`, rows: [row] })
-							.then(msg => setTimeout(() => {
-								msg.delete();
-							}, 3000));
-					})
-					.catch(error => {
-						console.error(error);
-					});
-			} else if (i.customId === id_no) {
-				[row] = Util.disableButtons("_all", row);
-				interaction.editReply({ content: "No messages deleted.", components: [row] })
-					.then(msg => setTimeout(() => msg.delete(), 3000));
+
+			await i.deferUpdate();
+			// If the user clicked `Yes`
+			if (i.customId === idYes) {
+				[row] = disableButtons("_all", row);
+				const deleted = await interaction.channel.bulkDelete(args.amount, true).catch(error => console.error(error));
+
+				const msg = await interaction.channel.send({ content: `Deleted ${deleted.size} message${addS(amount)}.`, rows: [row] });
+				await wait(time);
+
+				await msg.delete();
+			// else if the user clicked `No`
+			} else if (i.customId === idNo) {
+				[row] = disableButtons("_all", row);
+				await interaction.editReply({ content: "No messages deleted.", components: [row] });
 			}
 			collector.stop();
 		});
 		setTimeout(() => {
 			if (!message.deleted) {
-				[row] = Util.disableButtons("_all", row);
+				[row] = disableButtons("_all", row);
 				interaction.editReply({ content: "No messages were deleted because you took too long to respond.", components: [row] });
 			}
 		}, time);

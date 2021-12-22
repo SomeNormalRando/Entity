@@ -1,6 +1,6 @@
 "use strict";
 const { MessageEmbed } = require("discord.js");
-const { config: { EMBED_COLOUR } } = require("../../index");
+const { Constants: { EMBED_COLOUR } } = require("../../index");
 module.exports = {
 	data: {
 		name: "choose",
