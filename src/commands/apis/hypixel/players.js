@@ -49,7 +49,7 @@ const defaultRow = new MessageActionRow()
 				},
 				{
 					label: "Miscellaneous",
-					description: "Detailed player counts for every other gamemode",
+					description: "Detailed player counts for other gamemodes/lobbies",
 					value: "MISC"
 				}
 			])
@@ -62,7 +62,7 @@ module.exports = interaction => {
 		const initialEmbed = new MessageEmbed()
 			.setTitle("Hypixel Player Counts")
 			.setColor(EMBED_COLOUR)
-			.setDescription(`**Total players: ${playerCount}**\nMain lobby: ${games.MAIN_LOBBY.players}\nTournament lobby: ${games.TOURNAMENT_LOBBY.players}`)
+			.setDescription(`**Total Players: ${playerCount}**\nMain lobby: ${games.MAIN_LOBBY.players}\nTournament lobby: ${games.TOURNAMENT_LOBBY.players}`)
 			.addFields([
 				{ name: "SkyBlock", value: `${games.SKYBLOCK.players}`, inline: true },
 				{ name: "Bed Wars", value: `${games.BEDWARS.players}`, inline: true },
@@ -71,10 +71,11 @@ module.exports = interaction => {
 				{ name: "TNT Games", value: `${games.TNTGAMES.players}`, inline: true },
 				{ name: "Classic Games", value: `${games.LEGACY.players}`, inline: true },
 			])
-			.setFooter("Information fetched at")
+			.setFooter({ text: "Information fetched at" })
 			.setTimestamp(fetchedTimestamp);
 
 		const initialRow = new MessageActionRow(defaultRow);
+		// Set the default row to general so that it's the one selected
 		initialRow.components[0].options.find(e => e.value === "GENERAL").default = true;
 
 		const msg = await interaction.editReply({ embeds: [initialEmbed], components: [initialRow] });
@@ -84,10 +85,16 @@ module.exports = interaction => {
 			if (i.user.id !== interaction.user.id) return i.reply({ content: "You aren't the one using this command.", ephemeral: true });
 			let embed = new MessageEmbed()
 				.setColor(EMBED_COLOUR)
-				.setFooter("Information fetched at")
+				.setFooter({ text: "Information fetched at" })
 				.setTimestamp(fetchedTimestamp);
 			// eslint-disable-next-line one-var
 			let row = new MessageActionRow(defaultRow);
+
+			// Make the previous default row not default
+			for (const option of row.components[0].options) {
+				if (option.default === true) option.default = false;
+			}
+			// Make the selected option the default row
 			row.components[0].options.find(e => e.value === i.values[0]).default = true;
 
 			const { players, modes } = games[i.values[0]] ?? { players: null, modes: null };
@@ -115,7 +122,7 @@ Blazing Fortress: **${modes.combat_2}**
 The End: **${modes.combat_3}**
 Dungeon Hub: **${modes.dungeon_hub}**
 Dungeons: **${modes.dungeon}**
-**Total players: ${players}**`, true);
+**Total Players: ${players}**`, true);
 					break;
 				}
 				case "BEDWARS": {
@@ -131,7 +138,7 @@ Dungeons: **${modes.dungeon}**
 4v4: **${modes.BEDWARS_TWO_FOUR}**
 Practice: **${modes.BEDWARS_PRACTICE}**
 Other: **${other}**
-**Total players: ${players}**`, true);
+**Total Players: ${players}**`, true);
 					break;
 				}
 				case "SKYWARS": {
@@ -139,11 +146,12 @@ Other: **${other}**
 						.setTitle("Hypixel Player Counts - SkyWars")
 						.setDescription(`\
 Ranked: **${modes.ranked_normal}**
-Solo (normal): **${modes.solo_normal}**
-Solo (insane): **${modes.solo_insane}**
-Teams (normal): **${modes.teams_normal}**
-Teams (insane): **${modes.teams_insane}**
-**Total players: ${players}**`, true);
+Solo (Normal): **${modes.solo_normal}**
+Solo (Insane): **${modes.solo_insane}**
+Teams (Normal): **${modes.teams_normal}**
+Teams (Insane): **${modes.teams_insane}**
+Mega: **${modes.mega_normal}**
+**Total Players: ${players}**`, true);
 					break;
 				}
 				case "MURDER_MYSTERY": {
@@ -154,7 +162,7 @@ Classic: **${modes.MURDER_CLASSIC ?? 0}**
 Double Up: **${modes.MURDER_DOUBLE_UP ?? 0}**
 Assassins: **${modes.MURDER_ASSASSINS ?? 0}**
 Infection: **${modes.MURDER_INFECTION ?? 0}**
-**Total players: ${players}**`, true);
+**Total Players: ${players}**`, true);
 					break;
 				}
 				case "TNTGAMES": {
@@ -165,7 +173,7 @@ Bow Spleef: **${modes.BOWSPLEEF ?? 0}**
 TNT Run: **${modes.TNTRUN ?? 0}**
 TNT Tag: **${modes.TNTAG ?? 0}**
 Wizards: **${modes.CAPTURE ?? 0}**
-**Total players: ${players}**`, true);
+**Total Players: ${players}**`, true);
 					break;
 				}
 				case "LEGACY": {
@@ -178,18 +186,22 @@ The Walls: **${modes.WALLS ?? 0}**
 VampireZ: **${modes.VAMPIREZ ?? 0}**
 Turbo Kart Racers: **${modes.GINGERBREAD ?? 0}**
 Paintball Warfare: **${modes.PAINTBALL ?? 0}**
-**Total players: ${players}**`);
+**Total Players: ${players}**`);
 					break;
 				}
 				case "MISC": {
 					embed
 						.setTitle("Hypixel Player Counts - Miscellaneous")
 						.setDescription(`
-UHC Champions: **${games.UHC.players}**
-Speed UHC: **${games.SPEED_UHC.players}**
+SMP: **${games.SMP.players ?? 0}**
+UHC Champions (Solo): **${games.UHC.modes.SOLO ?? 0}**
+UHC Champions (Teams): **${games.UHC.modes.TEAMS ?? 0}**
+Speed UHC (Solo): **${games.SPEED_UHC.modes.solo_normal ?? 0}**
+Speed UHC (Teams): **${games.SPEED_UHC.modes.team_normal ?? 0}**
 The Pit: **${games.PIT.players}**
 Housing: **${games.HOUSING.players}**
 Mega Walls: **${games.WALLS3.players}**
+Warlords: **${games.BATTLEGROUND.players}**
 Prototype Games: **${games.PROTOTYPE.players}**
 Replay: **${games.REPLAY.players}**
 Limbo: **${games.LIMBO.players}**

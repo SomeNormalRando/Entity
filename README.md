@@ -21,7 +21,7 @@ All source code is in `src/`
 `config.json` - config file
 
 `env.json` - (gitignored) environment variable file, structure is as below:
-```json
+```jsonc
 {
 	// bot token
 	"TOKEN": "abcdefg",

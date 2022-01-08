@@ -4,7 +4,8 @@ const { Routes } = require("discord-api-types/v9");
 const { env: { TOKEN, GUILD_WHITELIST }, Constants: { RESET_ESCAPE_CODE } } = require("../index");
 const readyMsg = `
 █▀▀ █▄ █ ▀█▀ █ ▀█▀ █▄█   █ █▀   █▀█ █▀▀ █▀█ █▀▄ █▄█
-██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █`;
+██▄ █ ▀█  █  █  █   █    █ ▄█   █▀▄ ██▄ █▀█ █▄▀  █\
+`;
 
 module.exports = {
 	name: "ready",
@@ -33,7 +34,7 @@ module.exports = {
 		}
 
 		// Log messages on ready
-		console.log(`\x1b[3;92mLogged in as ${client.user.tag}.\x1b[0m\n\x1b[34m${readyMsg}\x1b[0m\n`);
+		console.log(`\x1b[3;92mLogged in as ${client.user.tag}.\x1b[0m\n\x1b[94m${readyMsg}\x1b[0m\n`);
 	}
 };
 function reloadCommands(userId, global, commands) {
