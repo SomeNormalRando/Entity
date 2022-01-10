@@ -43,7 +43,7 @@ module.exports = {
 				{ name: "Position", value: role.position.toString(), inline: true }
 			)
 			.setTimestamp()
-			.setFooter(`Role ID: ${role.id}`);
+			.setFooter({ text: `Role ID: ${role.id}` });
 
 		// Permissions
 		if (showPermissions === true) {

@@ -109,7 +109,7 @@ module.exports = {
 		const embed = new Discord.MessageEmbed()
 			.setTitle(title)
 			.setColor(EMBED_COLOUR)
-			.setFooter(`Poll by ${interaction.user.tag}`);
+			.setFooter({ text: `Poll by ${interaction.user.tag}` });
 
 		if (args.subcommand === "yesno") {
 			await interaction.reply({ embeds: [embed], fetchReply: true })

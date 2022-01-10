@@ -51,7 +51,7 @@ module.exports = {
 				{ name: "Display Colour (Hex)", value: testCol(guildMember.displayHexColor.toUpperCase()), inline: true },
 			)
 			.setTimestamp()
-			.setFooter(`User ID: ${user.id}`);
+			.setFooter({ text: `User ID: ${user.id}` });
 
 		// Roles
 		if (showRoles === true) {

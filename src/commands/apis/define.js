@@ -45,7 +45,7 @@ module.exports = {
 						`[Try searching for it](https://www.urbandictionary.com/define.php?term=${query})`
 					)
 					.setTimestamp()
-					.setFooter("Powered by Urban Dictionary", logo);
+					.setFooter({ text: "Powered by Urban Dictionary", iconURL: logo });
 				return interaction.editReply({ embeds: [embed] });
 			}
 
@@ -66,7 +66,7 @@ module.exports = {
 						if (currentPage < 0) return interaction.followUp("An error occurred.");
 
 						embed = genEmbed(list, currentPage -= 1);
-						let [row] = [new Discord.MessageActionRow(templateRow)];
+						let row = new Discord.MessageActionRow(templateRow);
 						if (currentPage === 0) [row] = disableButtons(idLast, row);
 
 						interaction.editReply({ embeds: [embed], components: [row] });
@@ -74,7 +74,7 @@ module.exports = {
 						if (currentPage > list.length) return interaction.followUp("An error occurred.");
 
 						embed = genEmbed(list, currentPage += 1);
-						let [row] = [new Discord.MessageActionRow(templateRow)];
+						let row = new Discord.MessageActionRow(templateRow);
 						if (currentPage === list.length - 1) [row] = disableButtons(idNext, row);
 
 						interaction.editReply({ embeds: [embed], components: [row] });
@@ -110,6 +110,6 @@ function genEmbed(list, pageNum) {
 		)
 		.setColor(EMBED_COLOUR)
 		.setTimestamp()
-		.setFooter(`Powered by Urban Dictionary | Page ${pageNum + 1}/${list.length}`, logo);
+		.setFooter({ text: `Powered by Urban Dictionary | Page ${pageNum + 1}/${list.length}`, iconURL: logo });
 	return newEmbed;
 }

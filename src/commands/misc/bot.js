@@ -36,7 +36,7 @@ module.exports = {
 				.setTitle("Invite link:")
 				.setDescription(`[Invite link (normal)](${INVITE_LINK})\n[Invite link (admin)](${adminInvite})`)
 				.setTimestamp()
-				.setFooter(client.user.tag, client.user.displayAvatarURL({ format: "png", dynamic: true }));
+				.setFooter({ text: client.user.tag, iconURL: client.user.displayAvatarURL({ format: "png", dynamic: true }) });
 		} else if (args.subcommand === "info") {
 			const devNames = [];
 			for (const devId of DEVELOPERS) {
@@ -55,7 +55,7 @@ module.exports = {
 					{ name: "Memory usage", value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, inline: true }
 				)
 				.setTimestamp()
-				.setFooter(`${client.user.tag} | ID: ${client.user.id}`, client.user.displayAvatarURL({ format: "png", dynamic: true }));
+				.setFooter({ text: `${client.user.tag} | ID: ${client.user.id}`, iconURL: client.user.displayAvatarURL({ format: "png", dynamic: true }) });
 		}
 		interaction.reply({ embeds: [embed] });
 	}

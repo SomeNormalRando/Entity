@@ -37,7 +37,7 @@ module.exports = {
 			.setURL(`https://reddit.com${result.permalink}`)
 			.setImage(result.url)
 			.setTimestamp(result.created * 1000)
-			.setFooter(`${result.ups} 👍 • ${result.num_comments} 💬 | From ${result.subreddit_name_prefixed} | Posted on`);
+			.setFooter({ text: `${result.ups} 👍 • ${result.num_comments} 💬 | From ${result.subreddit_name_prefixed} | Posted on` });
 		interaction.editReply({ embeds: [embed] });
 	}
 };

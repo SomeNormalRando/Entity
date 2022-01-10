@@ -57,7 +57,7 @@ module.exports = {
 				{ name: "__Moderation__", value: text.moderation.join("\n") },
 				{ name: "__Roles__", value: `${roles.size} (${roles.filter(role => role.hoist).size} hoisted)`, inline: true },
 			)
-			.setFooter(`ID: ${guild.id}`, guild.iconURL({ dynamic: true }))
+			.setFooter({ text: `ID: ${guild.id}`, iconURL: guild.iconURL({ dynamic: true }) })
 			.setTimestamp();
 
 		// Variable values

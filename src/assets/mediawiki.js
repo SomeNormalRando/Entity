@@ -53,7 +53,7 @@ module.exports = async function getMediawikiPage(options) {
 		.setDescription(trimStr(extract[0], EMBED_LIMITS.DESCRIPTION, `[...more](${searchLink})`))
 		.setThumbnail(await pageImage(baseURL, title) || defaultImage);
 	if (onlyDescription === true) {
-		embed.setFooter("Description-only mode");
+		embed.setFooter({ text: "Description-only mode" });
 		return embed;
 	}
 

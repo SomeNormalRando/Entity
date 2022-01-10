@@ -77,7 +77,7 @@ module.exports = {
 			embed
 				.setTitle(`Successfully timed out ${targetMemberTag} for ${interaction.options.getInteger("time")} minutes`)
 				.setDescription(`**Reason:** ${reason}\nThe timeout expires in ${Formatters.time(expiresIn, "R")}.`)
-				.setFooter("Use `/timeout remove` to remove the timeout")
+				.setFooter({ text: "Use `/timeout remove` to remove the timeout" })
 				.setTimestamp();
 		} else if (args.subcommand === "remove") {
 			if (!targetMember.communicationDisabledUntilTimestamp) return interaction.reply(`**${targetMemberTag}** is not currently timed-out.`);
@@ -86,7 +86,7 @@ module.exports = {
 			embed
 				.setTitle(`Successfully removed the time-out for ${targetMemberTag}`)
 				.setDescription(`**Reason:** ${reason}`)
-				.setFooter("Use `/timeout set` to time-out the user again")
+				.setFooter({ text: "Use `/timeout set` to time-out the user again" })
 				.setTimestamp();
 		}
 		targetMember.timeout(time, `${interaction.user.tag} used /timeout [reason: ${reason}]`).then(_ => {

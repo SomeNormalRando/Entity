@@ -81,7 +81,7 @@ function fetchAnimal(animal, interaction) {
 			.setColor(EMBED_COLOUR)
 			.setImage(image)
 			.setTimestamp()
-			.setFooter(`Powered by ${credit}`);
+			.setFooter({ text: `Powered by ${credit}` });
 
 		interaction.editReply({ embeds: [embed] });
 	}).catch(_ => interaction.editReply({
