@@ -48,7 +48,7 @@ module.exports = {
 			if (!cooldowns.has(commandName)) {
 				cooldowns.set(commandName, new Collection());
 			}
-			const userId = interaction.member.id;
+			const userId = interaction.user.id;
 			const now = Date.now();
 			const timestamps = cooldowns.get(commandName);
 			const cooldownAmount = (command.cooldown || 1) * 1000;
