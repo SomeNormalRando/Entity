@@ -69,6 +69,7 @@ module.exports = {
 
 		fetchAnimal(args.subcommand, interaction);
 	},
+	fetchAnimal
 };
 function fetchAnimal(animal, interaction) {
 	const { url, fn, start, end = [""], credit } = URLs[animal];
