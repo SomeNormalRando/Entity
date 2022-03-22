@@ -16,7 +16,7 @@ module.exports = {
 			const { quoteText, quoteAuthor, quoteLink } = await response.text().then(text => JSON.parse(text.replace(/\\'/g, "'")));
 
 			const embed = new MessageEmbed()
-				.setAuthor(quoteText, null, quoteLink)
+				.setAuthor({ name: quoteText, url: quoteLink })
 				.setColor(EMBED_COLOUR)
 				.setDescription(`- ${quoteAuthor || "Anonymous"}`)
 				.setTimestamp();

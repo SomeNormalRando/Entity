@@ -27,7 +27,7 @@ module.exports = {
 	avatar(user) {
 		return new Discord.MessageEmbed()
 			.setColor(EMBED_COLOUR)
-			.setAuthor(user.tag, user.displayAvatarURL({ format: "png", dynamic: true }))
+			.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL({ format: "png", dynamic: true }) })
 			.setTitle("Avatar")
 			.setImage(`${user.displayAvatarURL({ format: "png", dynamic: true, size: 1024 })}`);
 	}
