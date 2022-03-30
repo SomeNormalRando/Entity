@@ -5,7 +5,7 @@ const {
 	Util: { SlashCommand, disableButtons, trimStr, createErrorEmbed, fetchResource }
 } = require("../../index.js");
 
-const logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/UD_logo-01.svg/1920px-UD_logo-01.svg.png";
+const logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Urban_Dictionary_logo.svg/1920px-Urban_Dictionary_logo.svg.png";
 const idLast = "define_last";
 const idNext = "define_next";
 const templateRow = new Discord.MessageActionRow().addComponents(
