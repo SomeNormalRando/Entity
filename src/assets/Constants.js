@@ -7,6 +7,7 @@ module.exports = {
 	DEVELOPERS: ["728910425780912199"],
 	// Console escape code for moving the cursor to the start of the line and deleting everything on the current line
 	RESET_ESCAPE_CODE: "\r\u001b[K",
+	// Background colour of Discord embeds on dark mode
 	EMBED_COLOUR: "#2F3136",
 	EMBED_LIMITS: {
 		TOTAL_CHARACTERS: 6000,

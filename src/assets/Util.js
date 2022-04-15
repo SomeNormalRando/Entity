@@ -1,5 +1,4 @@
 "use strict";
-// eslint-disable-next-line id-length
 const { ApplicationCommandManager, MessageActionRow, MessageEmbed } = require("discord.js");
 const fetch = require("node-fetch");
 const { EMBED_COLOUR } = require("./Constants");

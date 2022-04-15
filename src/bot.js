@@ -1,7 +1,6 @@
 "use strict";
 process.stdout.write("Running bot.js...");
 // Require needed modules
-// eslint-disable-next-line id-length
 const { Collection, ApplicationCommandManager } = require("discord.js");
 const { readdirSync } = require("fs");
 const { client, env: { TOKEN }, config: { IGNORE }, Constants: { RESET_ESCAPE_CODE }, Util: { errSep } } = require("./index");

@@ -8,16 +8,6 @@ const {
 const logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Urban_Dictionary_logo.svg/1920px-Urban_Dictionary_logo.svg.png";
 const idLast = "define_last";
 const idNext = "define_next";
-const templateRow = new Discord.MessageActionRow().addComponents(
-	new Discord.MessageButton()
-		.setCustomId(idLast)
-		.setLabel("◀")
-		.setStyle("PRIMARY"),
-	new Discord.MessageButton()
-		.setCustomId(idNext)
-		.setLabel("▶")
-		.setStyle("PRIMARY")
-);
 const time = 60000;
 module.exports = {
 	data: new SlashCommand({
@@ -37,6 +27,7 @@ module.exports = {
 		const query = encodeURIComponent(term);
 
 		fetchResource(`https://api.urbandictionary.com/v0/define?term=${query}`).then(({ list }) => {
+			// The returned JSON looks like {"list":[{...}]}
 			if (!list || !list.length) {
 				const embed = new Discord.MessageEmbed()
 					.setColor(EMBED_COLOUR)
@@ -52,7 +43,7 @@ module.exports = {
 			let currentPage = 0;
 			const firstEmbed = genEmbed(list, currentPage);
 
-			let [firstRow] = disableButtons(idLast, new Discord.MessageActionRow(templateRow));
+			let [firstRow] = disableButtons(idLast, templateRow());
 
 			if (list.length <= 1) [firstRow] = disableButtons(idNext, firstRow);
 
@@ -66,7 +57,7 @@ module.exports = {
 						if (currentPage < 0) return interaction.followUp("An error occurred.");
 
 						embed = genEmbed(list, currentPage -= 1);
-						let row = new Discord.MessageActionRow(templateRow);
+						let row = templateRow();
 						if (currentPage === 0) [row] = disableButtons(idLast, row);
 
 						interaction.editReply({ embeds: [embed], components: [row] });
@@ -74,21 +65,24 @@ module.exports = {
 						if (currentPage > list.length) return interaction.followUp("An error occurred.");
 
 						embed = genEmbed(list, currentPage += 1);
-						let row = new Discord.MessageActionRow(templateRow);
+						let row = templateRow();
 						if (currentPage === list.length - 1) [row] = disableButtons(idNext, row);
 
 						interaction.editReply({ embeds: [embed], components: [row] });
 					}
 				});
 				setTimeout(() => {
-					const [row] = disableButtons("_all", new Discord.MessageActionRow(templateRow));
+					const [row] = disableButtons("_all", templateRow());
 					interaction.editReply({ embeds: [embed], components: [row] });
 				}, time);
 			}).catch(err => {
 				console.error(err);
 				interaction.editReply("An error occurred.");
 			});
-		}).catch(_ => interaction.editReply({ embeds: [createErrorEmbed(`while fetching the definition for ${term}`)], ephemeral: true }));
+		}).catch(err => {
+			console.error(err);
+			interaction.editReply({ embeds: [createErrorEmbed(`while fetching the definition for ${term}`)], ephemeral: true });
+		});
 	}
 };
 const regex = /\[(.+?)\]/g;
@@ -112,4 +106,16 @@ function genEmbed(list, pageNum) {
 		.setTimestamp()
 		.setFooter({ text: `Powered by Urban Dictionary | Page ${pageNum + 1}/${list.length}`, iconURL: logo });
 	return newEmbed;
+}
+function templateRow() {
+	return new Discord.MessageActionRow().addComponents(
+		new Discord.MessageButton()
+			.setCustomId(idLast)
+			.setLabel("◀")
+			.setStyle("PRIMARY"),
+		new Discord.MessageButton()
+			.setCustomId(idNext)
+			.setLabel("▶")
+			.setStyle("PRIMARY")
+	);
 }
